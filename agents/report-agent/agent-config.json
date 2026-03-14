@@ -1,0 +1,8 @@
+{
+  "name": "report-generator",
+  "displayName": "Gerador de Relatórios HOF",
+  "description": "Analisa histórico do paciente e gera resumos clínicos estruturados",
+  "languageCode": "pt-BR",
+  "model": "gemini-1.5-pro",
+  "systemPromptFile": "system-prompt.md"
+}

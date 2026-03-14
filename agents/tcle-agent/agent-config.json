@@ -1,0 +1,8 @@
+{
+  "name": "tcle-generator",
+  "displayName": "Gerador de TCLE HOF",
+  "description": "Gera TCLE personalizado baseado no procedimento a ser realizado",
+  "languageCode": "pt-BR",
+  "model": "gemini-1.5-pro",
+  "systemPromptFile": "system-prompt.md"
+}

@@ -1,0 +1,285 @@
+// =============================================================================
+// Prontuário HOF — Schema do Banco de Dados
+// Conforme: CFM 1.638/2002, CFO 91/2009, CFBM 320/2020, LGPD (Lei 13.709/2018)
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+// =============================================================================
+// CLÍNICA / WORKSPACE (multi-tenant preparado)
+// =============================================================================
+model Clinica {
+  id            String         @id @default(cuid())
+  nome          String
+  cnpj          String?        @unique
+  endereco      String?
+  telefone      String?
+  email         String?
+  logo          String?
+  plano         Plano          @default(FREE)
+  ativo         Boolean        @default(true)
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  profissionais Profissional[]
+  pacientes     Paciente[]
+  prontuarios   Prontuario[]
+  auditLogs     AuditLog[]
+
+  @@map("clinicas")
+}
+
+// =============================================================================
+// PROFISSIONAL (médico, dentista, biomédico)
+// =============================================================================
+model Profissional {
+  id             String         @id @default(cuid())
+  clinicaId      String         @map("clinica_id")
+  nome           String
+  email          String         @unique
+  senhaHash      String         @map("senha_hash")
+  conselho       TipoConselho
+  numeroConselho String         @map("numero_conselho")
+  uf             String
+  especialidade  String?
+  assinaturaUrl  String?        @map("assinatura_url")
+  role           Role           @default(PROFISSIONAL)
+  ativo          Boolean        @default(true)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  clinica        Clinica        @relation(fields: [clinicaId], references: [id])
+  prontuarios    Prontuario[]
+  auditLogs      AuditLog[]
+
+  @@map("profissionais")
+}
+
+// =============================================================================
+// PACIENTE
+// =============================================================================
+model Paciente {
+  id           String       @id @default(cuid())
+  clinicaId    String       @map("clinica_id")
+  nome         String
+  cpf          String       // Criptografado em repouso (AES-256-GCM)
+  dataNasc     DateTime     @map("data_nasc")
+  sexo         Sexo
+  email        String?
+  telefone     String
+  whatsapp     String?
+  endereco     Json?        // { logradouro, numero, bairro, cidade, uf, cep }
+  fotoUrl      String?      @map("foto_url")
+  observacoes  String?
+  ativo        Boolean      @default(true)
+  deletedAt    DateTime?    @map("deleted_at") // Soft delete — LGPD
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  clinica      Clinica      @relation(fields: [clinicaId], references: [id])
+  prontuarios  Prontuario[]
+  tcles        Tcle[]
+
+  @@unique([clinicaId, cpf])
+  @@index([clinicaId])
+  @@index([nome])
+  @@map("pacientes")
+}
+
+// =============================================================================
+// PRONTUÁRIO PRINCIPAL
+// =============================================================================
+model Prontuario {
+  id              String            @id @default(cuid())
+  clinicaId       String            @map("clinica_id")
+  pacienteId      String            @map("paciente_id")
+  profissionalId  String            @map("profissional_id")
+  numero          String            @unique // P-2024-0001
+  dataAtendimento DateTime          @map("data_atendimento")
+  queixaPrincipal String            @map("queixa_principal")
+  anamnese        Json?             // JSON estruturado — ver modelo de anamnese
+  avaliacaoFacial Json?             @map("avaliacao_facial")
+  status          StatusProntuario  @default(ABERTO)
+  assinadoPor     String?           @map("assinado_por")
+  assinadoEm      DateTime?         @map("assinado_em")
+  hashIntegridade String?           @map("hash_integridade") // SHA-256 para auditoria
+  pdfUrl          String?           @map("pdf_url")
+  deletedAt       DateTime?         @map("deleted_at") // Soft delete — nunca deletar fisicamente
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  clinica         Clinica           @relation(fields: [clinicaId], references: [id])
+  paciente        Paciente          @relation(fields: [pacienteId], references: [id])
+  profissional    Profissional      @relation(fields: [profissionalId], references: [id])
+  procedimentos   Procedimento[]
+  evolucoes       Evolucao[]
+  fotos           FotoClinica[]
+  tcle            Tcle?
+
+  @@index([clinicaId])
+  @@index([pacienteId])
+  @@index([dataAtendimento(sort: Desc)])
+  @@map("prontuarios")
+}
+
+// =============================================================================
+// PROCEDIMENTO HOF (um prontuário pode ter múltiplos)
+// =============================================================================
+model Procedimento {
+  id              String           @id @default(cuid())
+  prontuarioId    String           @map("prontuario_id")
+  tipo            TipoProcedimento
+  regiaoAnatomica String           @map("regiao_anatomica")
+  produto         String
+  fabricante      String?
+  lote            String           // Rastreabilidade obrigatória
+  validadeProduto DateTime?        @map("validade_produto")
+  concentracao    String?
+  volume          String?
+  tecnica         String?
+  observacoes     String?
+  createdAt       DateTime         @default(now()) @map("created_at")
+  prontuario      Prontuario       @relation(fields: [prontuarioId], references: [id])
+
+  @@index([prontuarioId])
+  @@map("procedimentos")
+}
+
+// =============================================================================
+// EVOLUÇÃO / RETORNO
+// =============================================================================
+model Evolucao {
+  id                 String     @id @default(cuid())
+  prontuarioId       String     @map("prontuario_id")
+  data               DateTime
+  descricao          String
+  satisfacaoPaciente Int?       @map("satisfacao_paciente") // 1-5
+  retornoNecessario  Boolean    @default(false) @map("retorno_necessario")
+  dataRetorno        DateTime?  @map("data_retorno")
+  createdAt          DateTime   @default(now()) @map("created_at")
+  prontuario         Prontuario @relation(fields: [prontuarioId], references: [id])
+
+  @@index([prontuarioId])
+  @@map("evolucoes")
+}
+
+// =============================================================================
+// FOTO CLÍNICA (antes/depois)
+// =============================================================================
+model FotoClinica {
+  id           String     @id @default(cuid())
+  prontuarioId String     @map("prontuario_id")
+  url          String
+  tipo         TipoFoto
+  angulo       String?    // FRONTAL, PERFIL_D, PERFIL_E, etc.
+  descricao    String?
+  createdAt    DateTime   @default(now()) @map("created_at")
+  prontuario   Prontuario @relation(fields: [prontuarioId], references: [id])
+
+  @@index([prontuarioId])
+  @@map("fotos_clinicas")
+}
+
+// =============================================================================
+// TCLE — Termo de Consentimento Livre e Esclarecido
+// =============================================================================
+model Tcle {
+  id             String     @id @default(cuid())
+  prontuarioId   String     @unique @map("prontuario_id")
+  pacienteId     String     @map("paciente_id")
+  conteudo       String     // HTML do TCLE gerado
+  assinaturaUrl  String?    @map("assinatura_url")
+  ipAssinatura   String?    @map("ip_assinatura")
+  userAgent      String?    @map("user_agent")
+  assinadoEm     DateTime?  @map("assinado_em")
+  versao         String     // Versão do template TCLE usado
+  createdAt      DateTime   @default(now()) @map("created_at")
+  prontuario     Prontuario @relation(fields: [prontuarioId], references: [id])
+  paciente       Paciente   @relation(fields: [pacienteId], references: [id])
+
+  @@map("tcles")
+}
+
+// =============================================================================
+// LOG DE AUDITORIA (LGPD compliance — obrigatório CFM)
+// =============================================================================
+model AuditLog {
+  id             String   @id @default(cuid())
+  clinicaId      String   @map("clinica_id")
+  userId         String   @map("user_id")
+  acao           String   // PRONTUARIO_VISUALIZADO, PRONTUARIO_EDITADO, etc.
+  entidade       String   // Prontuario, Paciente, etc.
+  entidadeId     String   @map("entidade_id")
+  ip             String
+  userAgent      String?  @map("user_agent")
+  dados          Json?    // Snapshot antes/depois
+  createdAt      DateTime @default(now()) @map("created_at")
+  clinica        Clinica  @relation(fields: [clinicaId], references: [id])
+  profissional   Profissional @relation(fields: [userId], references: [id])
+
+  @@index([clinicaId])
+  @@index([entidade, entidadeId])
+  @@index([createdAt(sort: Desc)])
+  @@map("audit_logs")
+}
+
+// =============================================================================
+// ENUMERAÇÕES
+// =============================================================================
+enum TipoConselho {
+  CFM
+  CFO
+  CFBM
+  CFF
+}
+
+enum Role {
+  ADMIN
+  PROFISSIONAL
+  RECEPCIONISTA
+}
+
+enum Plano {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum Sexo {
+  MASCULINO
+  FEMININO
+  OUTRO
+  NAO_INFORMADO
+}
+
+enum StatusProntuario {
+  ABERTO
+  EM_ANDAMENTO
+  ASSINADO
+  ARQUIVADO
+}
+
+enum TipoProcedimento {
+  TOXINA_BOTULINICA
+  PREENCHIMENTO_ACIDO_HIALURONICO
+  BIOESTIMULADOR_COLAGENO
+  FIOS_PDO
+  RINOMODELACAO
+  BICHECTOMIA
+  LIPOFILLING_FACIAL
+  PEELING_QUIMICO
+  SKINBOOSTER
+  MICROAGULHAMENTO
+  OUTRO
+}
+
+enum TipoFoto {
+  ANTES
+  DEPOIS
+  INTRAOPERATORIO
+  RETORNO
+}
