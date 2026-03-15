@@ -15,7 +15,7 @@
 └──────┬──────────────┬───────────────────┬───────────────────┘
        │              │                   │
 ┌──────▼──────┐ ┌─────▼──────┐ ┌─────────▼──────┐
-│  Neon.tech  │ │Uploadthing │ │   Resend.com   │
+│   Supabase  │ │Uploadthing │ │   Resend.com   │
 │ PostgreSQL  │ │  (Fotos)   │ │    (Email)     │
 │  Serverless │ │            │ │                │
 └─────────────┘ └────────────┘ └────────────────┘
@@ -37,7 +37,7 @@
 - **Zod** — Validação compartilhada front/back
 
 ### Banco de Dados
-- **Neon.tech** (PostgreSQL serverless) — Free: 512MB
+- **Supabase** (PostgreSQL) — Free Tier
 
 ### Segurança
 - Criptografia AES-256-GCM para CPF e dados sensíveis
@@ -50,7 +50,7 @@
 
 | Decisão | Justificativa |
 |---------|--------------|
-| Prisma + Neon.tech | Type-safety + serverless PostgreSQL gratuito |
+| Prisma + Supabase | Type-safety + backend as a service gratuito e robusto |
 | NextAuth v5 + JWT | Sessões stateless, sem overhead de DB para auth |
 | Zod compartilhado | Mesma validação no front e back, DRY |
 | Zustand | Mais leve que Redux, API simples |

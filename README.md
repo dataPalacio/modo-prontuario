@@ -6,7 +6,7 @@
   ![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
   ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
   ![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma)
-  ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon.tech-4169E1?logo=postgresql)
+  ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-3ECF8E?logo=supabase)
 </div>
 
 ---
@@ -34,7 +34,7 @@ Sistema web MicroSaaS para gestão de **prontuários eletrônicos** especializad
 npm install
 
 # 2. Configure as variáveis de ambiente baseadas no .env.example
-cp .env.example .env.local
+cp .env.example .env
 
 # 3. Configure o banco e popule os dados da demonstração
 npm run db:generate

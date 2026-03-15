@@ -21,9 +21,9 @@ O Supabase como padrão trabalha com o *PgBouncer* integrado para Pool de Conex�
 4. **Direct URL**: Para o Prisma conseguir gerenciar a infraestrutura e rodar migrations.
    - Verifique que a URL está acessando via porta `5432`.
 
-### Passo A: Editando o `.env.local`
+### Passo A: Editando o `.env`
 
-Adicione ou atualize as chaves do seu arquivo `.env.local`:
+Adicione ou atualize as chaves do seu arquivo `.env`:
 
 ```env
 # Conexão transacional para Client (Porta 6543 + pgbouncer)
@@ -35,7 +35,7 @@ DIRECT_URL="postgres://[user]:[password]@[host]:5432/postgres"
 
 ## 3. Gerando as Tabelas no Banco
 
-Com o Supabase configurado e as senhas ajustadas no `.env.local`, você tem dois caminhos para criar a estrutura do Prontuário:
+Com o Supabase configurado e as senhas ajustadas no `.env`, você tem dois caminhos para criar a estrutura do Prontuário:
 
 ### Cenário A: Executar via painel do Supabase (SQL Editor) - Manual
 1. Abra o arquivo [schema_supabase.sql](./schema_supabase.sql) que está nesta mesma pasta nesta IDE e copie todo o seu conteúdo.
@@ -56,7 +56,7 @@ npx prisma db push
 Neste projeto utilizamos o **NextAuth (Auth.js)** para gerenciar sessões independentes. Visto que você agora está operando no Supabase:
 
 - A tabela de usuários chamada pelo NextAuth está atrelada à nossa configuração do `PrismaAdapter`.
-- Para o NextAuth funcionar, basta definir o token de segurança dele obrigatoriamente neste `.env.local`:
+- Para o NextAuth funcionar, basta definir o token de segurança dele obrigatoriamente neste `.env`:
 
 ```env
 NEXTAUTH_URL="http://localhost:3000"

@@ -18,7 +18,7 @@ Analisa o histórico do paciente e gera resumos clínicos estruturados.
 
 ## Configuração
 
-1. Configure as credenciais do Google Cloud no `.env.local`
+1. Configure as credenciais do Google Cloud no `.env`
 2. Habilite a Vertex AI API no console Google Cloud
 3. Execute `npm run agents:deploy` para fazer o deploy dos agents
 

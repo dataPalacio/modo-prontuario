@@ -1,22 +1,22 @@
 # Guia de Deploy no Vercel — Prontuário HOF
 
-Este guia descreve o passo a passo para fazer o deploy do Prontuário HOF (Next.js + Prisma + Neon PostgreSQL) na plataforma Vercel.
+Este guia descreve o passo a passo para fazer o deploy do Prontuário HOF (Next.js + Prisma + Supabase PostgreSQL) na plataforma Vercel.
 
 ## 1. Pré-requisitos
 
 1. Uma conta no [Github](https://github.com/), [GitLab](https://about.gitlab.com/) ou [Bitbucket](https://bitbucket.org/).
 2. Uma conta na [Vercel](https://vercel.com/).
-3. Uma conta no [Neon.tech](https://neon.tech/) para o banco de dados PostgreSQL serverless.
+3. Uma conta no [Supabase](https://supabase.com/) para o banco de dados PostgreSQL.
 4. O código do projeto devidamente submetido (commit/push) ao seu repositório remoto.
 
-## 2. Preparando o Banco de Dados (Neon)
+## 2. Preparando o Banco de Dados (Supabase)
 
 A Vercel precisa se conectar ao seu banco de dados de produção para realizar as consultas e salvar informações.
 
-1. Acesse https://console.neon.tech/ e crie um novo projeto/banco de dados (ou use um já existente).
-2. Na aba **Dashboard**, procure pela **Connection String** (URL do banco de dados).
-3. Selecione a opção **Pooled connection** (extremamente recomendado para ambientes serverless como a Vercel, pois evita estourar o limite de conexões simultâneas).
-4. Copie a URL gerada (ela começa com `postgres://` ou `postgresql://`). Guarde-a para usar na Vercel.
+1. Acesse https://supabase.com/dashboard e crie um novo projeto/banco de dados (ou use um já existente).
+2. Na aba **Dashboard**, procure pela opção **Connect** ou vá em **Settings > Database**.
+3. Selecione a aba **URI** e certifique-se de marcar a opção **Use connection pooling** (extremamente recomendado para ambientes serverless como a Vercel, pois evita estourar o limite de conexões simultâneas).
+4. Copie a URL gerada (ela começa com `postgresql://` e tipicamente usa a porta 6543 do pooler com `?pgbouncer=true`). Guarde-a para usar na Vercel.
 
 ## 3. Preparando o Projeto na Vercel
 
@@ -43,7 +43,8 @@ A Vercel já preenche o "Build Command" com `next build`. No entanto, como utili
 
 Para que sua aplicação rode em produção de forma funcional, todas as chaves secretas e configurações devem ser carregadas aqui. Expanda a aba **Environment Variables** e adicione:
 
-*   **`DATABASE_URL`**: A URL de conexão com seu banco Neon (a connection string que você obteve no Passo 2). Lembre-se, use a URL com *connection pooling*. Se a URL não tiver `?sslmode=require` no final, você deve adicioná-lo.
+*   **`DATABASE_URL`**: A URL de conexão com seu banco Supabase (a connection string do Pooler que você obteve no Passo 2). Lembre-se, use a URL com *connection pooling* (ex: porta 6543) com `?pgbouncer=true`.
+*   **`DIRECT_URL`**: A URL de conexão direta ao Supabase (ex: porta 5432). É exigida à vezes pelo Prisma para realocação ou migrations sem pgbouncer.
 *   **`NEXTAUTH_URL`**: O domínio em que a sua aplicação vai rodar. *Dica: Você pode preencher este campo provisoriamente com uma URL genérica, ou não preenchê-lo ainda, e deixar o próprio sistema de deploy automático da Vercel gerenciá-lo com as "System Environment Variables". Depois que aplicar o domínio definitivo, atualize esse valor.*
 *   **`NEXTAUTH_SECRET`**: Um token criptográfico forte. No terminal da sua máquina, rode `openssl rand -base64 32` e cole aqui o valor gerado.
 *   Outras APIs como, por exemplo, `UPLOADTHING_SECRET`, `RESEND_API_KEY` (se você as for configurar).
@@ -61,12 +62,12 @@ Para que sua aplicação rode em produção de forma funcional, todas as chaves 
 
 ## 6. Sincronizando o Banco de Dados (Migrations)
 
-O projeto foi *buildado* corretamente, MAS o seu banco de dados Neon novo está vazio. Precisamos rodar os comandos do Prisma (`push` ou `migrate`) no banco.
+O projeto foi *buildado* corretamente, MAS o seu banco de dados Supabase novo está vazio. Precisamos rodar os comandos do Prisma (`push` ou `migrate`) no banco.
 
 Uma das formas mais fáceis é utilizar o próprio terminal local:
 
-1. No seu computador, edite provisoriamente o seu `.env.local` na raiz do projeto ou altere diretamente pelo terminal.
-2. Troque o valor de `DATABASE_URL` para a **URL de produção do banco Neon** que você registrou na Vercel.
+1. No seu computador, edite provisoriamente o seu `.env` na raiz do projeto ou altere diretamente pelo terminal.
+2. Troque o valor de `DATABASE_URL` e `DIRECT_URL` para as **URLs de produção do banco Supabase** que você registrou na Vercel.
 3. No terminal da sua máquina, execute:
    ```bash
    npx prisma db push
@@ -77,7 +78,7 @@ Uma das formas mais fáceis é utilizar o próprio terminal local:
    npm run db:seed
    ```
    *(Cuidado: só faça o _seed_ em ambientes de teste. O seed pode criar usuários fictícios no banco produtivo).*
-5. **Atenção:** Logo após terminar, lembre-se de reverter a sua string do banco local (no seu `.env.local`) para não continuar apontando para produção!
+5. **Atenção:** Logo após terminar, lembre-se de reverter a sua string do banco local (no seu `.env`) para não continuar apontando para produção!
 
 ## 7. Pronto! 🚀
 

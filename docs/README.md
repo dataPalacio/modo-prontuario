@@ -30,7 +30,7 @@ Desenvolvido para profissionais habilitados: médicos, cirurgiões-dentistas com
 | Backend | Next.js API Routes (Serverless) |
 | Auth | NextAuth.js v5 (JWT) |
 | ORM | Prisma |
-| Banco de Dados | PostgreSQL (Neon.tech) |
+| Banco de Dados | PostgreSQL (Supabase) |
 | Upload | Uploadthing |
 | E-mail | Resend |
 | Hospedagem | Vercel |
@@ -47,8 +47,8 @@ cd modo-prontuario
 npm install
 
 # 3. Configure variáveis de ambiente
-cp .env.example .env.local
-# Edite .env.local com suas credenciais
+cp .env.example .env
+# Edite .env com suas credenciais
 
 # 4. Configure o banco de dados
 npx prisma generate

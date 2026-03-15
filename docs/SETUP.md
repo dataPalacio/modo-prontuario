@@ -5,7 +5,7 @@
 - **Node.js** >= 18.x
 - **npm** >= 9.x
 - **Git**
-- Conta gratuita no [Neon.tech](https://neon.tech) (PostgreSQL)
+- Conta gratuita no [Supabase](https://supabase.com) (PostgreSQL)
 
 ## Passo a Passo
 
@@ -25,13 +25,13 @@ npm install
 ### 3. Configurar variáveis de ambiente
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
-Edite `.env.local` com suas credenciais:
+Edite `.env` com suas credenciais:
 
 ```env
-# Banco de dados (obtenha em https://neon.tech)
+# Banco de dados (obtenha em https://supabase.com/dashboard)
 DATABASE_URL="postgresql://..."
 
 # Auth (gere um segredo aleatório)
@@ -81,8 +81,8 @@ Acesse: [http://localhost:3000](http://localhost:3000)
 ## Troubleshooting
 
 ### Erro de conexão com banco
-- Verifique se `DATABASE_URL` no `.env.local` está correto
-- O Neon.tech requer `?sslmode=require` na URL
+- Verifique se `DATABASE_URL` no `.env` está correto
+- O Supabase usando Connection Pooler (porta 6543) requer `?pgbouncer=true` na url.
 
 ### Erro de autenticação
 - Verifique se `NEXTAUTH_SECRET` está configurado
