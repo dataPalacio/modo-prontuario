@@ -11,11 +11,11 @@ Desenvolvido para profissionais habilitados: médicos, cirurgiões-dentistas com
 - [x] Cadastro e gestão de pacientes
 - [x] Prontuário eletrônico completo com anamnese HOF
 - [x] Registro de procedimentos com rastreabilidade de produtos/lotes
-- [ ] Upload de fotos clínicas (antes/depois)
-- [ ] TCLE digital com assinatura eletrônica
-- [ ] Geração de PDF do prontuário
-- [ ] Agenda de consultas
-- [ ] Relatórios e estatísticas
+- [x] Upload de fotos clínicas (antes/depois)
+- [x] TCLE digital com assinatura eletrônica
+- [x] Agenda de consultas
+- [x] Relatórios e estatísticas analíticas
+- [x] Painel de Configurações (Perfil, Clínica, Segurança)
 - [x] Multi-profissional por clínica
 - [x] Log de auditoria (LGPD)
 

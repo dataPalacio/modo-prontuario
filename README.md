@@ -22,8 +22,11 @@ Sistema web MicroSaaS para gestão de **prontuários eletrônicos** especializad
 - ✅ **Prontuário Eletrônico** multi-step (Paciente → Anamnese → Procedimento → TCLE)
 - ✅ **Rastreabilidade** de produtos e lotes (ANVISA)
 - ✅ **Anamnese estruturada** para HOF
-- ✅ **TCLE Digital** com assinatura
-- ✅ **Multi-clínica** (multi-tenant preparado)
+- ✅ **TCLE Digital** com assinatura touch
+- ✅ **Fotos Clínicas** (Upload Antes / Durante / Depois)
+- ✅ **Agenda** e Calendário dinâmico
+- ✅ **Relatórios e KPIs** (Gráficos exportáveis)
+- ✅ **Multi-clínica** (Painel de Configurações do Profissional)
 - ✅ **Audit Log** para LGPD
 - ✅ **Soft Delete** (20 anos de retenção - CFM)
 
@@ -67,6 +70,7 @@ modo-prontuario/
 ## 📄 Documentação
 
 - [README do Projeto](./docs/README.md)
+- [Funcionalidades e Guias (.FEATURES)](./docs/FEATURES.md)
 - [Arquitetura](./docs/ARCHITECTURE.md)
 - [Segurança & LGPD](./docs/SECURITY.md)
 - [Setup Local](./docs/SETUP.md)
