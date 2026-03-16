@@ -67,7 +67,8 @@ model Paciente {
   id           String       @id @default(cuid())
   clinicaId    String       @map("clinica_id")
   nome         String
-  cpf          String       // Criptografado em repouso (AES-256-GCM)
+  cpf          String       // Criptografado em repouso — AES-256-GCM (ver src/lib/crypto.ts)
+  cpfHash      String       @map("cpf_hash") // HMAC-SHA256 do CPF para busca/unicidade
   dataNasc     DateTime     @map("data_nasc")
   sexo         Sexo
   email        String?
@@ -84,8 +85,9 @@ model Paciente {
   prontuarios  Prontuario[]
   tcles        Tcle[]
 
-  @@unique([clinicaId, cpf])
+  @@unique([clinicaId, cpfHash]) // Unicidade baseada no hash (CPF criptografado varia por IV)
   @@index([clinicaId])
+  @@index([cpfHash])
   @@index([nome])
   @@map("pacientes")
 }

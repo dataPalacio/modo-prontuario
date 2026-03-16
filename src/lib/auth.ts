@@ -3,6 +3,7 @@ import Credentials from 'next-auth/providers/credentials'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
+import '@/types/auth'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma) as never,
@@ -50,21 +51,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id
-        token.role = (user as { role: string }).role
-        token.clinicaId = (user as { clinicaId: string }).clinicaId
-        token.conselho = (user as { conselho: string }).conselho
-        token.numeroConselho = (user as { numeroConselho: string }).numeroConselho
+        token.id = user.id!
+        token.role = user.role
+        token.clinicaId = user.clinicaId
+        token.conselho = user.conselho
+        token.numeroConselho = user.numeroConselho
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string
-        ;(session.user as Record<string, unknown>).role = token.role
-        ;(session.user as Record<string, unknown>).clinicaId = token.clinicaId
-        ;(session.user as Record<string, unknown>).conselho = token.conselho
-        ;(session.user as Record<string, unknown>).numeroConselho = token.numeroConselho
+        session.user.id = token.id
+        session.user.role = token.role
+        session.user.clinicaId = token.clinicaId
+        session.user.conselho = token.conselho
+        session.user.numeroConselho = token.numeroConselho
       }
       return session
     },

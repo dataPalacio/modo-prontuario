@@ -1,19 +1,40 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
 
 export default function LoginPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
+
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    // TODO: Integrar com NextAuth signIn
-    setTimeout(() => setLoading(false), 2000)
+    setError(null)
+
+    const result = await signIn('credentials', {
+      email,
+      password,
+      redirect: false,
+    })
+
+    if (!result?.ok) {
+      setError('E-mail ou senha inválidos. Verifique suas credenciais.')
+      setLoading(false)
+      return
+    }
+
+    router.push(callbackUrl)
+    router.refresh()
   }
 
   return (
@@ -64,6 +85,20 @@ export default function LoginPage() {
             Entrar na sua conta
           </h2>
 
+          {error && (
+            <div style={{
+              background: '#FEF2F2',
+              border: '1px solid #FECACA',
+              color: 'var(--brand-danger)',
+              borderRadius: 'var(--radius)',
+              padding: '0.75rem 1rem',
+              fontSize: '0.875rem',
+              marginBottom: '1rem',
+            }}>
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label">E-mail profissional</label>
@@ -80,6 +115,8 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   style={{ paddingLeft: '2.5rem' }}
                   required
+                  disabled={loading}
+                  autoComplete="email"
                 />
               </div>
             </div>
@@ -99,6 +136,8 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   style={{ paddingLeft: '2.5rem', paddingRight: '2.5rem' }}
                   required
+                  disabled={loading}
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
@@ -109,6 +148,7 @@ export default function LoginPage() {
                     border: 'none', cursor: 'pointer', color: 'var(--text-muted)',
                     padding: 0,
                   }}
+                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -116,15 +156,9 @@ export default function LoginPage() {
             </div>
 
             <div style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              display: 'flex', justifyContent: 'flex-end', alignItems: 'center',
               marginBottom: '1.5rem',
             }}>
-              <label style={{
-                display: 'flex', alignItems: 'center', gap: '0.5rem',
-                fontSize: '0.8125rem', color: 'var(--text-secondary)', cursor: 'pointer',
-              }}>
-                <input type="checkbox" /> Manter conectado
-              </label>
               <a href="/esqueci-senha" style={{
                 fontSize: '0.8125rem', color: 'var(--brand-primary)',
                 textDecoration: 'none',
