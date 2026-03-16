@@ -8,7 +8,12 @@ import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
 function LoginPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
+  const rawCallbackUrl = searchParams.get('callbackUrl') || '/dashboard'
+  // Validação para prevenir open redirect — aceitar somente caminhos relativos
+  const callbackUrl =
+    rawCallbackUrl.startsWith('/') && !rawCallbackUrl.startsWith('//')
+      ? rawCallbackUrl
+      : '/dashboard'
 
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
@@ -21,20 +26,25 @@ function LoginPageContent() {
     setLoading(true)
     setError(null)
 
-    const result = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-    })
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      })
 
-    if (!result?.ok) {
-      setError('E-mail ou senha inválidos. Verifique suas credenciais.')
+      if (!result?.ok) {
+        setError('E-mail ou senha inválidos. Verifique suas credenciais.')
+        return
+      }
+
+      router.push(callbackUrl)
+      router.refresh()
+    } catch {
+      setError('Erro de conexão. Tente novamente em instantes.')
+    } finally {
       setLoading(false)
-      return
     }
-
-    router.push(callbackUrl)
-    router.refresh()
   }
 
   return (
