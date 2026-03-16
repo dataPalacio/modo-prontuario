@@ -1,7 +1,58 @@
+import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import { Pool } from 'pg'
+import { encrypt, hashCPF } from '../src/lib/crypto'
 
-const prisma = new PrismaClient()
+const connectionString = process.env.DATABASE_URL
+
+if (!connectionString) {
+  throw new Error('DATABASE_URL não definida para executar o seed')
+}
+
+const pool = new Pool({
+  connectionString,
+})
+
+const prisma = new PrismaClient({
+  adapter: new PrismaPg(pool),
+})
+
+function buildPacienteData(
+  clinicaId: string,
+  data: {
+    nome: string
+    cpf: string
+    dataNasc: Date
+    sexo: 'FEMININO' | 'MASCULINO' | 'OUTRO' | 'NAO_INFORMADO'
+    telefone: string
+    email?: string
+    whatsapp?: string
+    endereco?: {
+      logradouro: string
+      numero: string
+      bairro: string
+      cidade: string
+      uf: string
+      cep: string
+    }
+  }
+) {
+  const cpf = data.cpf.replace(/\D/g, '')
+
+  return {
+    clinicaId,
+    nome: data.nome,
+    cpf: encrypt(cpf),
+    cpfHash: hashCPF(cpf),
+    dataNasc: data.dataNasc,
+    sexo: data.sexo,
+    telefone: data.telefone,
+    email: data.email,
+    whatsapp: data.whatsapp,
+    endereco: data.endereco,
+  }
+}
 
 async function main() {
   console.log('🦷 Iniciando seed do Prontuário HOF...\n')
@@ -39,8 +90,7 @@ async function main() {
   // 3. Criar Pacientes de demonstração
   const pacientes = await Promise.all([
     prisma.paciente.create({
-      data: {
-        clinicaId: clinica.id,
+      data: buildPacienteData(clinica.id, {
         nome: 'Maria Silva Santos',
         cpf: '12345678901',
         dataNasc: new Date('1985-06-15'),
@@ -56,50 +106,46 @@ async function main() {
           uf: 'SP',
           cep: '01304001',
         },
-      },
+      }),
     }),
     prisma.paciente.create({
-      data: {
-        clinicaId: clinica.id,
+      data: buildPacienteData(clinica.id, {
         nome: 'João Carlos Oliveira',
         cpf: '98765432100',
         dataNasc: new Date('1978-11-22'),
         sexo: 'MASCULINO',
         telefone: '11988776655',
         email: 'joao.oliveira@email.com',
-      },
+      }),
     }),
     prisma.paciente.create({
-      data: {
-        clinicaId: clinica.id,
+      data: buildPacienteData(clinica.id, {
         nome: 'Ana Beatriz Lima',
         cpf: '45678912300',
         dataNasc: new Date('1990-03-08'),
         sexo: 'FEMININO',
         telefone: '11977665544',
         email: 'ana.lima@email.com',
-      },
+      }),
     }),
     prisma.paciente.create({
-      data: {
-        clinicaId: clinica.id,
+      data: buildPacienteData(clinica.id, {
         nome: 'Roberto Mendes Filho',
         cpf: '32165498700',
         dataNasc: new Date('1972-09-30'),
         sexo: 'MASCULINO',
         telefone: '11966554433',
-      },
+      }),
     }),
     prisma.paciente.create({
-      data: {
-        clinicaId: clinica.id,
+      data: buildPacienteData(clinica.id, {
         nome: 'Carla Fernanda Costa',
         cpf: '65432198700',
         dataNasc: new Date('1995-01-12'),
         sexo: 'FEMININO',
         telefone: '11955443322',
         email: 'carla.costa@email.com',
-      },
+      }),
     }),
   ])
   console.log(`✅ ${pacientes.length} pacientes criados`)
@@ -189,9 +235,11 @@ async function main() {
 main()
   .then(async () => {
     await prisma.$disconnect()
+    await pool.end()
   })
   .catch(async (e) => {
     console.error('❌ Erro no seed:', e)
     await prisma.$disconnect()
+    await pool.end()
     process.exit(1)
   })

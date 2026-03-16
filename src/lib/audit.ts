@@ -5,6 +5,7 @@
 // Regra: NUNCA lançar erro — falha no log não deve interromper a operação clínica.
 // =============================================================================
 
+import type { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 
 export interface AuditLogInput {
@@ -15,7 +16,7 @@ export interface AuditLogInput {
   entidadeId: string
   ip: string
   userAgent?: string
-  dados?: Record<string, unknown> // Snapshot antes/depois da operação
+  dados?: Prisma.InputJsonValue
 }
 
 /**

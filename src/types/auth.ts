@@ -5,11 +5,13 @@
 
 import type { DefaultSession } from 'next-auth'
 
+type AppRole = 'ADMIN' | 'PROFISSIONAL' | 'RECEPCIONISTA'
+
 declare module 'next-auth' {
   interface Session extends DefaultSession {
     user: DefaultSession['user'] & {
       id: string
-      role: 'ADMIN' | 'PROFISSIONAL' | 'RECEPCIONISTA'
+      role: AppRole
       clinicaId: string
       conselho: string
       numeroConselho: string
@@ -18,17 +20,15 @@ declare module 'next-auth' {
 
   interface User {
     id: string
-    role: 'ADMIN' | 'PROFISSIONAL' | 'RECEPCIONISTA'
+    role: AppRole
     clinicaId: string
     conselho: string
     numeroConselho: string
   }
-}
 
-declare module 'next-auth/jwt' {
   interface JWT {
     id: string
-    role: 'ADMIN' | 'PROFISSIONAL' | 'RECEPCIONISTA'
+    role: AppRole
     clinicaId: string
     conselho: string
     numeroConselho: string

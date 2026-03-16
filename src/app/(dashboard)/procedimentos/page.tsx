@@ -88,7 +88,9 @@ export default function ProcedimentosPage() {
                       <Box size={14} color="var(--text-muted)" />
                       <span className="font-mono" style={{ fontSize: '0.85rem', fontWeight: 600 }}>{p.lote}</span>
                       {p.alert && (
-                        <AlertTriangle size={14} color="var(--brand-warning)" title="Validade próxima" />
+                        <span title="Validade próxima" aria-label="Validade próxima" style={{ display: 'inline-flex' }}>
+                          <AlertTriangle size={14} color="var(--brand-warning)" />
+                        </span>
                       )}
                     </div>
                   </td>

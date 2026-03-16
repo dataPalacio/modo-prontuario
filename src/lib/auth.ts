@@ -5,6 +5,8 @@ import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
 import '@/types/auth'
 
+type AppRole = 'ADMIN' | 'PROFISSIONAL' | 'RECEPCIONISTA'
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma) as never,
   session: { strategy: 'jwt', maxAge: 8 * 60 * 60 }, // 8 horas
@@ -51,7 +53,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id!
+        token.id = user.id
         token.role = user.role
         token.clinicaId = user.clinicaId
         token.conselho = user.conselho
@@ -61,11 +63,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id
-        session.user.role = token.role
-        session.user.clinicaId = token.clinicaId
-        session.user.conselho = token.conselho
-        session.user.numeroConselho = token.numeroConselho
+        session.user.id = token.id as string
+        session.user.role = token.role as AppRole
+        session.user.clinicaId = token.clinicaId as string
+        session.user.conselho = token.conselho as string
+        session.user.numeroConselho = token.numeroConselho as string
       }
       return session
     },
