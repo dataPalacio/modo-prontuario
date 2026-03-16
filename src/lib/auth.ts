@@ -22,21 +22,38 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Senha', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null
+        const email = String(credentials?.email ?? '').trim().toLowerCase()
+        const password = String(credentials?.password ?? '')
+
+        if (!email || !password) {
+          console.warn('[auth] CredentialsSignin: missing credentials')
+          return null
+        }
 
         const profissional = await prisma.profissional.findUnique({
-          where: { email: credentials.email as string },
+          where: { email },
           include: { clinica: true },
         })
 
-        if (!profissional || !profissional.ativo) return null
+        if (!profissional) {
+          console.warn('[auth] CredentialsSignin: user not found', { email })
+          return null
+        }
+
+        if (!profissional.ativo) {
+          console.warn('[auth] CredentialsSignin: user inactive', { email })
+          return null
+        }
 
         const senhaValida = await bcrypt.compare(
-          credentials.password as string,
+          password,
           profissional.senhaHash
         )
 
-        if (!senhaValida) return null
+        if (!senhaValida) {
+          console.warn('[auth] CredentialsSignin: invalid password', { email })
+          return null
+        }
 
         return {
           id: profissional.id,

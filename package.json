@@ -13,6 +13,7 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
+    "db:bootstrap-admin": "tsx prisma/bootstrap-admin.ts",
     "db:studio": "prisma studio",
     "db:migrate": "prisma migrate dev"
   },
