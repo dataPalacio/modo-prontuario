@@ -1,8 +1,12 @@
+import { config as loadEnv } from 'dotenv'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { Pool } from 'pg'
 import { encrypt, hashCPF } from '../src/lib/crypto'
+
+loadEnv()
+loadEnv({ path: '.env.local', override: true })
 
 const connectionString = process.env.DATABASE_URL
 
