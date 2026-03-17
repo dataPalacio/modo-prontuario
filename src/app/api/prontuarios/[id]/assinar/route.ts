@@ -17,7 +17,7 @@ import { registrarAuditLog, extrairContextoHttp, AUDIT_ACOES } from '@/lib/audit
 // POST /api/prontuarios/[id]/assinar — Assina e trava o prontuário
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext<'/api/prontuarios/[id]/assinar'>
 ) {
   try {
     const session = await auth()
@@ -27,7 +27,7 @@ export async function POST(
 
     const clinicaId = session.user.clinicaId
     const profissionalId = session.user.id
-    const { id } = await params
+    const { id } = await context.params
 
     // Buscar prontuário completo para gerar hash
     const prontuario = await prisma.prontuario.findFirst({

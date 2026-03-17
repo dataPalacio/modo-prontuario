@@ -66,7 +66,7 @@ export default async function PacienteDetalhePage({ params }: { params: Promise<
             </div>
             <div>
               <div style={{ color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Idade e Nascimento</div>
-              <div>{calcularIdade(paciente.dataNasc.toISOString() as any)} anos ({paciente.dataNasc.toLocaleDateString('pt-BR')})</div>
+              <div>{calcularIdade(paciente.dataNasc.toISOString())} anos ({paciente.dataNasc.toLocaleDateString('pt-BR')})</div>
             </div>
             <div>
               <div style={{ color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Sexo</div>
@@ -112,11 +112,11 @@ export default async function PacienteDetalhePage({ params }: { params: Promise<
             <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius)', border: '1px dashed var(--border)' }}>
                <FileText size={48} style={{ opacity: 0.2, margin: '0 auto 1rem auto' }} />
                <p style={{ margin: 0 }}>Nenhum prontuário registrado para este paciente.</p>
-               <p style={{ fontSize: '0.8125rem', marginTop: '0.5rem' }}>Clique em "Criar Prontuário" para iniciar.</p>
+               <p style={{ fontSize: '0.8125rem', marginTop: '0.5rem' }}>Clique em &quot;Criar Prontuário&quot; para iniciar.</p>
             </div>
           ) : (
              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-               {paciente.prontuarios.map((prontuario: any) => (
+               {paciente.prontuarios.map((prontuario) => (
                  <Link href={`/prontuarios/${prontuario.id}`} key={prontuario.id} className="card" style={{ padding: '1rem', border: '1px solid var(--border)', background: 'var(--bg-elevated)', display: 'block', textDecoration: 'none', color: 'inherit', transition: 'all 0.2s' }}>
                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                      <div>

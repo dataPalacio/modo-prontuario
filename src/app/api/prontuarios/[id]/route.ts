@@ -24,7 +24,7 @@ const prontuarioUpdateSchema = z.object({
 // GET /api/prontuarios/[id] — Retorna prontuário com todos os relacionamentos
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext<'/api/prontuarios/[id]'>
 ) {
   try {
     const session = await auth()
@@ -33,7 +33,7 @@ export async function GET(
     }
 
     const clinicaId = session.user.clinicaId
-    const { id } = await params
+    const { id } = await context.params
 
     const prontuario = await prisma.prontuario.findFirst({
       where: { id, clinicaId, deletedAt: null }, // ⚠️ clinicaId obrigatório
@@ -98,7 +98,7 @@ export async function GET(
 // PUT /api/prontuarios/[id] — Atualiza prontuário (somente ABERTO ou EM_ANDAMENTO)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext<'/api/prontuarios/[id]'>
 ) {
   try {
     const session = await auth()
@@ -107,7 +107,7 @@ export async function PUT(
     }
 
     const clinicaId = session.user.clinicaId
-    const { id } = await params
+    const { id } = await context.params
 
     const existente = await prisma.prontuario.findFirst({
       where: { id, clinicaId, deletedAt: null },
@@ -183,7 +183,7 @@ export async function PUT(
 // DELETE /api/prontuarios/[id] — Arquiva prontuário (soft delete — CFM exige retenção 20 anos)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext<'/api/prontuarios/[id]'>
 ) {
   try {
     const session = await auth()
@@ -200,7 +200,7 @@ export async function DELETE(
     }
 
     const clinicaId = session.user.clinicaId
-    const { id } = await params
+    const { id } = await context.params
 
     const existente = await prisma.prontuario.findFirst({
       where: { id, clinicaId, deletedAt: null },

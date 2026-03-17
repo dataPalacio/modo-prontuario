@@ -25,7 +25,7 @@ const perfilUpdateSchema = z.object({
 })
 
 // GET /api/configuracoes/perfil — Retorna perfil do profissional autenticado
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth()
     if (!session?.user?.id) {

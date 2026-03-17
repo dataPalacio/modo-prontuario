@@ -20,7 +20,7 @@ const tcleAssinarSchema = z.object({
 // POST /api/tcle/[id]/assinar — Registra assinatura do paciente no TCLE
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext<'/api/tcle/[id]/assinar'>
 ) {
   try {
     const session = await auth()
@@ -29,7 +29,7 @@ export async function POST(
     }
 
     const clinicaId = session.user.clinicaId
-    const { id } = await params
+    const { id } = await context.params
 
     // Buscar TCLE com prontuário para verificar clinicaId
     const tcle = await prisma.tcle.findUnique({

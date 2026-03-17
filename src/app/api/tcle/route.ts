@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
-import { registrarAuditLog, extrairContextoHttp, AUDIT_ACOES } from '@/lib/audit'
+import { registrarAuditLog, extrairContextoHttp } from '@/lib/audit'
 import { z } from 'zod'
 
 // Versão atual do template TCLE — incrementar ao alterar o template

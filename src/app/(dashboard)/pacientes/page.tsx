@@ -132,7 +132,7 @@ export default async function PacientesPage({
                     </Link>
                   </td>
                   <td style={{ color: 'var(--text-secondary)' }}>
-                     {calcularIdade(p.dataNasc.toISOString() as any)} anos
+                    {calcularIdade(p.dataNasc.toISOString())} anos
                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                        {p.dataNasc.toLocaleDateString('pt-BR')}
                      </div>

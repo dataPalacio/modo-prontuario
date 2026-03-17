@@ -9,12 +9,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
-import { registrarAuditLog, extrairContextoHttp, AUDIT_ACOES } from '@/lib/audit'
+import { registrarAuditLog, extrairContextoHttp } from '@/lib/audit'
 
 // GET /api/procedimentos/[id] — Retorna procedimento individual
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext<'/api/procedimentos/[id]'>
 ) {
   try {
     const session = await auth()
@@ -23,7 +23,7 @@ export async function GET(
     }
 
     const clinicaId = session.user.clinicaId
-    const { id } = await params
+    const { id } = await context.params
 
     const procedimento = await prisma.procedimento.findUnique({
       where: { id },
@@ -53,7 +53,7 @@ export async function GET(
 // DELETE /api/procedimentos/[id] — Remove procedimento (apenas em prontuários abertos)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext<'/api/procedimentos/[id]'>
 ) {
   try {
     const session = await auth()
@@ -62,7 +62,7 @@ export async function DELETE(
     }
 
     const clinicaId = session.user.clinicaId
-    const { id } = await params
+    const { id } = await context.params
 
     const procedimento = await prisma.procedimento.findUnique({
       where: { id },

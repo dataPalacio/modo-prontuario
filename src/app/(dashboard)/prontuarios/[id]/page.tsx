@@ -2,14 +2,14 @@
 
 import { useState, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowLeft, User, FileSignature, Save, Printer, CheckCircle2 } from 'lucide-react'
 import SignatureCanvas from 'react-signature-canvas'
 
-// Supondo que [id] venha via params, vamos usar mock
-export default function ProntuarioDetalhePage({ params }: { params: { id: string } }) {
+export default function ProntuarioDetalhePage() {
   const [tab, setTab] = useState<'dados' | 'tcle'>('tcle')
   const [assinaturaData, setAssinaturaData] = useState<string | null>(null)
-  const sigPad = useRef<any>(null)
+  const sigPad = useRef<SignatureCanvas | null>(null)
 
   const handleClear = () => {
     sigPad.current?.clear()
@@ -17,11 +17,11 @@ export default function ProntuarioDetalhePage({ params }: { params: { id: string
   }
 
   const handleSaveSignature = () => {
-    if (sigPad.current?.isEmpty()) {
+    if (!sigPad.current || sigPad.current.isEmpty()) {
       alert('A assinatura não pode estar vazia.')
       return
     }
-    setAssinaturaData(sigPad.current?.getTrimmedCanvas().toDataURL('image/png'))
+    setAssinaturaData(sigPad.current.getTrimmedCanvas().toDataURL('image/png'))
   }
 
   return (
@@ -111,7 +111,14 @@ export default function ProntuarioDetalhePage({ params }: { params: { id: string
                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-success)', marginBottom: '1rem', fontWeight: 600 }}>
                      <CheckCircle2 size={18} /> Assinatura Coletada
                    </div>
-                   <img src={assinaturaData} alt="Assinatura do Paciente" style={{ maxHeight: 120, borderBottom: '1px solid var(--text-muted)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }} />
+                   <Image
+                     src={assinaturaData}
+                     alt="Assinatura do Paciente"
+                     width={320}
+                     height={120}
+                     unoptimized
+                     style={{ maxHeight: 120, borderBottom: '1px solid var(--text-muted)', paddingBottom: '0.5rem', marginBottom: '0.5rem', width: 'auto' }}
+                   />
                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Assinado digitalmente por Maria Silva Santos em {new Date().toLocaleDateString()}</p>
                    <button onClick={() => setAssinaturaData(null)} className="btn btn-ghost btn-sm" style={{ marginTop: '1rem', color: 'var(--brand-warning)' }}>
                      Refazer Assinatura

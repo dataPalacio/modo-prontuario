@@ -14,7 +14,7 @@ import { registrarAuditLog, extrairContextoHttp } from '@/lib/audit'
 // GET /api/fotos/[id] — Retorna foto individual
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext<'/api/fotos/[id]'>
 ) {
   try {
     const session = await auth()
@@ -23,7 +23,7 @@ export async function GET(
     }
 
     const clinicaId = session.user.clinicaId
-    const { id } = await params
+    const { id } = await context.params
 
     const foto = await prisma.fotoClinica.findUnique({
       where: { id },
@@ -48,7 +48,7 @@ export async function GET(
 // DELETE /api/fotos/[id] — Remove foto (apenas em prontuários editáveis)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext<'/api/fotos/[id]'>
 ) {
   try {
     const session = await auth()
@@ -57,7 +57,7 @@ export async function DELETE(
     }
 
     const clinicaId = session.user.clinicaId
-    const { id } = await params
+    const { id } = await context.params
 
     const foto = await prisma.fotoClinica.findUnique({
       where: { id },

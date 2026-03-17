@@ -29,7 +29,7 @@ const clinicaUpdateSchema = z.object({
 })
 
 // GET /api/configuracoes/clinica — Retorna dados da clínica
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth()
     if (!session?.user?.id) {

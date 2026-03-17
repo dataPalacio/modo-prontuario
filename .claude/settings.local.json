@@ -5,7 +5,9 @@
       "Bash(find \"c:/git-clones/modo-prontuario/src/app/\\(dashboard\\)\" -type f -name \"*.ts\" -o -name \"*.tsx\")",
       "Bash(npx prisma:*)",
       "Bash(npx tsc:*)",
-      "Bash(claude mcp:*)"
+      "Bash(claude mcp:*)",
+      "Bash(curl:*)",
+      "WebSearch"
     ]
   }
 }

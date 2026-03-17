@@ -86,16 +86,6 @@ export default function RegisterPage() {
     router.push('/login?registered=true')
   }
 
-  const inputStyle = {
-    width: '100%',
-    padding: '0.625rem 0.875rem 0.625rem 2.25rem',
-    border: '1px solid var(--border)',
-    borderRadius: 'var(--radius)',
-    fontSize: '0.875rem',
-    outline: 'none',
-    boxSizing: 'border-box' as const,
-  }
-
   const iconStyle = {
     position: 'absolute' as const,
     left: '0.75rem',

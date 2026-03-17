@@ -6,12 +6,12 @@
 // Retorna: totais, prontuários recentes, distribuição por status
 // =============================================================================
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 
 // GET /api/dashboard/stats — Métricas reais do dashboard
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth()
     if (!session?.user?.id) {

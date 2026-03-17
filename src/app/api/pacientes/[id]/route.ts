@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
-import { encrypt, decrypt, hashCPF } from '@/lib/crypto'
+import { decrypt } from '@/lib/crypto'
 import { registrarAuditLog, extrairContextoHttp, AUDIT_ACOES } from '@/lib/audit'
 import { z } from 'zod'
 
@@ -39,7 +39,7 @@ const pacienteUpdateSchema = z.object({
 // GET /api/pacientes/[id] — Retorna paciente com CPF decriptografado
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext<'/api/pacientes/[id]'>
 ) {
   try {
     const session = await auth()
@@ -48,7 +48,7 @@ export async function GET(
     }
 
     const clinicaId = session.user.clinicaId
-    const { id } = await params
+    const { id } = await context.params
 
     const paciente = await prisma.paciente.findFirst({
       where: { id, clinicaId, deletedAt: null }, // ⚠️ clinicaId obrigatório
@@ -109,7 +109,7 @@ export async function GET(
 // PUT /api/pacientes/[id] — Atualiza dados do paciente
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext<'/api/pacientes/[id]'>
 ) {
   try {
     const session = await auth()
@@ -118,7 +118,7 @@ export async function PUT(
     }
 
     const clinicaId = session.user.clinicaId
-    const { id } = await params
+    const { id } = await context.params
 
     // Verificar que o paciente pertence à clínica
     const existente = await prisma.paciente.findFirst({
@@ -182,7 +182,7 @@ export async function PUT(
 // DELETE /api/pacientes/[id] — Soft delete (LGPD — nunca deleta fisicamente)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext<'/api/pacientes/[id]'>
 ) {
   try {
     const session = await auth()
@@ -196,7 +196,7 @@ export async function DELETE(
     }
 
     const clinicaId = session.user.clinicaId
-    const { id } = await params
+    const { id } = await context.params
 
     const existente = await prisma.paciente.findFirst({
       where: { id, clinicaId, deletedAt: null },

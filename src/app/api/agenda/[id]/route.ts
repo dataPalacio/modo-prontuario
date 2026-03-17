@@ -24,7 +24,7 @@ const agendamentoUpdateSchema = z.object({
 // GET /api/agenda/[id] — Retorna agendamento individual
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext<'/api/agenda/[id]'>
 ) {
   try {
     const session = await auth()
@@ -33,7 +33,7 @@ export async function GET(
     }
 
     const clinicaId = session.user.clinicaId
-    const { id } = await params
+    const { id } = await context.params
 
     const agendamento = await prisma.agendamento.findFirst({
       where: { id, clinicaId },
@@ -57,7 +57,7 @@ export async function GET(
 // PUT /api/agenda/[id] — Atualiza agendamento
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext<'/api/agenda/[id]'>
 ) {
   try {
     const session = await auth()
@@ -66,7 +66,7 @@ export async function PUT(
     }
 
     const clinicaId = session.user.clinicaId
-    const { id } = await params
+    const { id } = await context.params
 
     const existente = await prisma.agendamento.findFirst({
       where: { id, clinicaId },
@@ -134,7 +134,7 @@ export async function PUT(
 // DELETE /api/agenda/[id] — Cancela agendamento (sem delete físico)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext<'/api/agenda/[id]'>
 ) {
   try {
     const session = await auth()
@@ -143,7 +143,7 @@ export async function DELETE(
     }
 
     const clinicaId = session.user.clinicaId
-    const { id } = await params
+    const { id } = await context.params
 
     const existente = await prisma.agendamento.findFirst({
       where: { id, clinicaId },

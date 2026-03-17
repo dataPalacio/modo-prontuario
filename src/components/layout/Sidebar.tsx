@@ -13,7 +13,6 @@ import {
   Camera,
   ChevronLeft,
   ChevronRight,
-  LogOut,
   Shield,
 } from 'lucide-react'
 import { useProntuarioStore } from '@/store/prontuarioStore'

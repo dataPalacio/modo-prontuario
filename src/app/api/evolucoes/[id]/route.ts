@@ -14,7 +14,7 @@ import { registrarAuditLog, extrairContextoHttp } from '@/lib/audit'
 // DELETE /api/evolucoes/[id] — Remove evolução (apenas em prontuários abertos/em andamento)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext<'/api/evolucoes/[id]'>
 ) {
   try {
     const session = await auth()
@@ -23,7 +23,7 @@ export async function DELETE(
     }
 
     const clinicaId = session.user.clinicaId
-    const { id } = await params
+    const { id } = await context.params
 
     const evolucao = await prisma.evolucao.findUnique({
       where: { id },
