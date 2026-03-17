@@ -752,6 +752,11 @@ VERTEX_AI_AGENT_ID_TCLE="..."
 - [ ] Hash SHA-256 gerado ao assinar prontuário (`sha256()`)
 - [ ] Verificar conselho profissional antes de procedimentos restritos
 - [ ] Tratamento correto: 400 (Zod), 401 (sem auth), 403 (sem permissão), 404, 409 (CPF duplicado), 500
+- [ ] `src/middleware.ts` existe com `matcher` cobrindo todas as rotas protegidas
+- [ ] Busca por ID usa `findFirst({ where: { id, clinicaId, deletedAt: null } })` — nunca `findUnique({ where: { id } })`
+- [ ] CPF omitido de listagens (use `select:`) — exibido apenas na página de detalhe via `decrypt()`
+- [ ] `params` e `searchParams` em Server Components tipados como `Promise<{...}>` e awaited (Next.js 16)
+- [ ] `z.enum([...])` sem segundo argumento string (Zod v4 — rompe com string direta)
 
 ---
 

@@ -10,7 +10,7 @@ import { z } from 'zod'
 const registerSchema = z.object({
   nome: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
   email: z.string().email('E-mail inválido'),
-  conselho: z.enum(['CFM', 'CFO', 'CFBM', 'CFF'], 'Conselho inválido'),
+  conselho: z.enum(['CFM', 'CFO', 'CFBM', 'CFF']),  // Zod v4: sem segundo arg string
   numeroConselho: z.string().min(1, 'Número do conselho é obrigatório'),
   uf: z.string().length(2, 'UF deve ter 2 caracteres'),
   especialidade: z.string().optional(),

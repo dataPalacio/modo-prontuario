@@ -18,9 +18,9 @@ export async function POST(request: NextRequest) {
       .toLowerCase()
     const adminPassword = process.env.BOOTSTRAP_ADMIN_PASSWORD || '123456'
 
-    if (adminPassword.length < 6) {
+    if (adminPassword.length < 8) {
       return NextResponse.json(
-        { error: 'BOOTSTRAP_ADMIN_PASSWORD deve ter ao menos 6 caracteres.' },
+        { error: 'BOOTSTRAP_ADMIN_PASSWORD deve ter ao menos 8 caracteres.' },
         { status: 400 }
       )
     }

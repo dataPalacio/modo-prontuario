@@ -1,6 +1,14 @@
 import type { NextConfig } from 'next'
+import path from 'path'
 
 const nextConfig: NextConfig = {
+  // =========================================================================
+  // Turbopack — define root explícito para evitar warning de lockfile múltiplo
+  // O aviso ocorre porque C:\git-clones também tem um package-lock.json
+  // =========================================================================
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
   // =========================================================================
   // Headers de Segurança — Prontuário HOF
   // Proteção contra XSS, Clickjacking, MIME sniffing, etc.

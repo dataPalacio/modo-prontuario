@@ -1,54 +1,82 @@
-'use client'
-
-import { useState } from 'react'
 import Link from 'next/link'
+import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 import {
   FileText,
   Search,
-  Filter,
   Plus,
   Eye,
-  Download,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
 
-const prontuariosMock = [
-  { id: '1', numero: 'P-2024-0147', paciente: 'Maria Silva Santos', profissional: 'Dr. Carlos Mendes',
-    procedimento: 'Toxina Botulínica — Frontal', data: '14/03/2025', status: 'ASSINADO' },
-  { id: '2', numero: 'P-2024-0146', paciente: 'João Carlos Oliveira', profissional: 'Dra. Ana Lima',
-    procedimento: 'Preenchimento AH — Lábios', data: '14/03/2025', status: 'EM_ANDAMENTO' },
-  { id: '3', numero: 'P-2024-0145', paciente: 'Ana Beatriz Lima', profissional: 'Dr. Carlos Mendes',
-    procedimento: 'Bioestimulador — Radiesse', data: '13/03/2025', status: 'ABERTO' },
-  { id: '4', numero: 'P-2024-0144', paciente: 'Roberto Mendes', profissional: 'Dra. Ana Lima',
-    procedimento: 'Fios de PDO — Lifting', data: '13/03/2025', status: 'ASSINADO' },
-  { id: '5', numero: 'P-2024-0143', paciente: 'Carla Fernanda Costa', profissional: 'Dr. Carlos Mendes',
-    procedimento: 'Skinbooster — Facial', data: '12/03/2025', status: 'ARQUIVADO' },
-  { id: '6', numero: 'P-2024-0142', paciente: 'Fernanda Alves', profissional: 'Dr. Carlos Mendes',
-    procedimento: 'Microagulhamento', data: '12/03/2025', status: 'ASSINADO' },
-]
-
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; cls: string }> = {
-    ABERTO: { label: 'Aberto', cls: 'badge badge--aberto' },
-    EM_ANDAMENTO: { label: 'Em Andamento', cls: 'badge badge--andamento' },
-    ASSINADO: { label: 'Assinado', cls: 'badge badge--assinado' },
-    ARQUIVADO: { label: 'Arquivado', cls: 'badge badge--arquivado' },
-  }
-  const { label, cls } = map[status] || map.ABERTO
-  return <span className={cls}>{label}</span>
+const STATUS_LABELS: Record<string, string> = {
+  ABERTO: 'Aberto',
+  EM_ANDAMENTO: 'Em Andamento',
+  ASSINADO: 'Assinado',
+  ARQUIVADO: 'Arquivado',
 }
 
-export default function ProntuariosPage() {
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('TODOS')
+const STATUS_CLASSES: Record<string, string> = {
+  ABERTO: 'badge badge--aberto',
+  EM_ANDAMENTO: 'badge badge--andamento',
+  ASSINADO: 'badge badge--assinado',
+  ARQUIVADO: 'badge badge--arquivado',
+}
 
-  const filtered = prontuariosMock.filter((p) => {
-    const matchSearch = p.paciente.toLowerCase().includes(search.toLowerCase()) ||
-      p.numero.toLowerCase().includes(search.toLowerCase())
-    const matchStatus = statusFilter === 'TODOS' || p.status === statusFilter
-    return matchSearch && matchStatus
-  })
+function StatusBadge({ status }: { status: string }) {
+  return (
+    <span className={STATUS_CLASSES[status] ?? 'badge badge--aberto'}>
+      {STATUS_LABELS[status] ?? status}
+    </span>
+  )
+}
+
+export default async function ProntuariosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; status?: string; page?: string }>
+}) {
+  const session = await auth()
+  if (!session?.user?.id) redirect('/login')
+  const clinicaId = session.user.clinicaId
+
+  const params = await searchParams
+  const query = params.q || ''
+  const statusFilter = params.status || 'TODOS'
+  const page = parseInt(params.page || '1')
+  const take = 15
+  const skip = (page - 1) * take
+
+  const where = {
+    clinicaId,       // ⚠️ isolamento multi-tenant — NUNCA remover
+    deletedAt: null, // ⚠️ soft delete — nunca listar registros excluídos
+    ...(statusFilter !== 'TODOS' && { status: statusFilter as never }),
+    ...(query && {
+      OR: [
+        { numero: { contains: query, mode: 'insensitive' as const } },
+        { paciente: { nome: { contains: query, mode: 'insensitive' as const } } },
+      ],
+    }),
+  }
+
+  const [prontuarios, total] = await Promise.all([
+    prisma.prontuario.findMany({
+      where,
+      skip,
+      take,
+      orderBy: { dataAtendimento: 'desc' },
+      include: {
+        paciente: { select: { id: true, nome: true } },
+        profissional: { select: { nome: true, conselho: true, numeroConselho: true } },
+        procedimentos: { select: { tipo: true }, take: 1 },
+      },
+    }),
+    prisma.prontuario.count({ where }),
+  ])
+
+  const totalPages = Math.ceil(total / take)
 
   return (
     <div>
@@ -59,7 +87,7 @@ export default function ProntuariosPage() {
         <div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Prontuários</h1>
           <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-            Todos os prontuários eletrônicos da clínica
+            {total} prontuário{total !== 1 ? 's' : ''} encontrado{total !== 1 ? 's' : ''}
           </p>
         </div>
         <Link href="/prontuarios/novo" className="btn btn-primary">
@@ -69,7 +97,7 @@ export default function ProntuariosPage() {
 
       {/* Filters */}
       <div className="card" style={{ marginBottom: '1.5rem', padding: '1rem 1.5rem' }}>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <form action="/prontuarios" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ position: 'relative', flex: 1, minWidth: 250 }}>
             <Search size={16} style={{
               position: 'absolute', left: '0.75rem', top: '50%',
@@ -77,26 +105,36 @@ export default function ProntuariosPage() {
             }} />
             <input
               type="text"
+              name="q"
               placeholder="Buscar por nº ou paciente..."
               className="form-input"
               style={{ paddingLeft: '2.5rem' }}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              defaultValue={query}
             />
+            {/* Preservar status ao submeter busca */}
+            {statusFilter !== 'TODOS' && (
+              <input type="hidden" name="status" value={statusFilter} />
+            )}
           </div>
-          <div style={{ display: 'flex', gap: '0.375rem' }}>
+          <button type="submit" className="btn btn-outline btn-sm">Buscar</button>
+          {query && (
+            <Link href={`/prontuarios${statusFilter !== 'TODOS' ? `?status=${statusFilter}` : ''}`} className="btn btn-ghost btn-sm" style={{ color: 'var(--text-muted)' }}>
+              Limpar
+            </Link>
+          )}
+          <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
             {['TODOS', 'ABERTO', 'EM_ANDAMENTO', 'ASSINADO', 'ARQUIVADO'].map((s) => (
-              <button
+              <Link
                 key={s}
+                href={`/prontuarios?${query ? `q=${query}&` : ''}${s !== 'TODOS' ? `status=${s}` : ''}`}
                 className={`btn btn-sm ${statusFilter === s ? 'btn-primary' : 'btn-ghost'}`}
-                onClick={() => setStatusFilter(s)}
                 style={{ fontSize: '0.75rem' }}
               >
-                {s === 'TODOS' ? 'Todos' : s === 'EM_ANDAMENTO' ? 'Em Andamento' : s.charAt(0) + s.slice(1).toLowerCase()}
-              </button>
+                {STATUS_LABELS[s] ?? 'Todos'}
+              </Link>
             ))}
           </div>
-        </div>
+        </form>
       </div>
 
       {/* Table */}
@@ -115,7 +153,7 @@ export default function ProntuariosPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((p) => (
+              {prontuarios.map((p) => (
                 <tr key={p.id}>
                   <td>
                     <span className="font-mono" style={{
@@ -124,10 +162,23 @@ export default function ProntuariosPage() {
                       {p.numero}
                     </span>
                   </td>
-                  <td style={{ fontWeight: 500 }}>{p.paciente}</td>
-                  <td style={{ color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>{p.profissional}</td>
-                  <td style={{ color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>{p.procedimento}</td>
-                  <td style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>{p.data}</td>
+                  <td style={{ fontWeight: 500 }}>
+                    <Link href={`/pacientes/${p.paciente.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                      {p.paciente.nome}
+                    </Link>
+                  </td>
+                  <td style={{ color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                    {p.profissional.nome}
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      {p.profissional.conselho} {p.profissional.numeroConselho}
+                    </div>
+                  </td>
+                  <td style={{ color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                    {p.procedimentos[0]?.tipo.replace(/_/g, ' ') ?? '—'}
+                  </td>
+                  <td style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
+                    {p.dataAtendimento.toLocaleDateString('pt-BR')}
+                  </td>
                   <td><StatusBadge status={p.status} /></td>
                   <td>
                     <div style={{ display: 'flex', gap: '0.25rem' }}>
@@ -138,20 +189,48 @@ export default function ProntuariosPage() {
                       >
                         <Eye size={14} />
                       </Link>
-                      <button
-                        className="btn btn-ghost btn-sm"
-                        title="Baixar PDF"
-                        style={{ padding: '0.25rem 0.5rem' }}
-                      >
-                        <Download size={14} />
-                      </button>
                     </div>
                   </td>
                 </tr>
               ))}
+
+              {prontuarios.length === 0 && (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '4rem 2rem', color: 'var(--text-muted)' }}>
+                    <FileText size={48} style={{ opacity: 0.2, margin: '0 auto 1rem auto' }} />
+                    {query || statusFilter !== 'TODOS'
+                      ? 'Nenhum prontuário encontrado com esses filtros.'
+                      : 'Nenhum prontuário registrado.'}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {total > take && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', borderTop: '1px solid var(--border)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+            <span>Mostrando {skip + 1}–{Math.min(skip + take, total)} de <strong>{total}</strong></span>
+            <div style={{ display: 'flex', gap: '0.375rem' }}>
+              <Link
+                href={`/prontuarios?${query ? `q=${query}&` : ''}${statusFilter !== 'TODOS' ? `status=${statusFilter}&` : ''}page=${page - 1}`}
+                className={`btn btn-outline btn-sm ${page <= 1 ? 'pointer-events-none opacity-50' : ''}`}
+              >
+                <ChevronLeft size={16} /> Anterior
+              </Link>
+              <div style={{ padding: '0 0.5rem', display: 'flex', alignItems: 'center' }}>
+                Página {page} de {totalPages}
+              </div>
+              <Link
+                href={`/prontuarios?${query ? `q=${query}&` : ''}${statusFilter !== 'TODOS' ? `status=${statusFilter}&` : ''}page=${page + 1}`}
+                className={`btn btn-outline btn-sm ${page >= totalPages ? 'pointer-events-none opacity-50' : ''}`}
+              >
+                Próxima <ChevronRight size={16} />
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

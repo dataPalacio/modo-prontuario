@@ -1,22 +1,39 @@
 import { prisma } from '@/lib/prisma'
-import { notFound } from 'next/navigation'
+import { auth } from '@/lib/auth'
+import { decrypt } from '@/lib/crypto'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, User, Phone, Mail, Calendar, Edit, FileText, Plus } from 'lucide-react'
 import { formatCPF, formatPhone, calcularIdade } from '@/lib/utils'
 
-export default async function PacienteDetalhePage({ params }: { params: { id: string } }) {
-  const { id } = await Promise.resolve(params)
+export default async function PacienteDetalhePage({ params }: { params: Promise<{ id: string }> }) {
+  const session = await auth()
+  if (!session?.user?.id) redirect('/login')
+  const clinicaId = session.user.clinicaId
 
-  const paciente = await prisma.paciente.findUnique({
-    where: { id },
+  const { id } = await params
+
+  // ⚠️ clinicaId obrigatório — proteção contra IDOR (acesso cruzado entre clínicas)
+  const paciente = await prisma.paciente.findFirst({
+    where: { id, clinicaId, deletedAt: null },
     include: {
       prontuarios: {
+        where: { deletedAt: null },
         orderBy: { createdAt: 'desc' },
       },
     },
   })
 
   if (!paciente) return notFound()
+
+  // CPF é armazenado criptografado — descriptografar apenas para exibição no detalhe
+  let cpfFormatado = '***.***.***-**'
+  try {
+    cpfFormatado = formatCPF(decrypt(paciente.cpf))
+  } catch {
+    // Fallback seguro — não expor detalhes do erro ao usuário
+    console.error('[PacienteDetalhe] Falha ao descriptografar CPF', { pacienteId: id })
+  }
 
   return (
     <div>
@@ -45,7 +62,7 @@ export default async function PacienteDetalhePage({ params }: { params: { id: st
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', fontSize: '0.875rem' }}>
             <div>
               <div style={{ color: 'var(--text-muted)', marginBottom: '0.25rem' }}>CPF</div>
-              <div className="font-mono" style={{ fontSize: '0.875rem' }}>{formatCPF(paciente.cpf)}</div>
+              <div className="font-mono" style={{ fontSize: '0.875rem' }}>{cpfFormatado}</div>
             </div>
             <div>
               <div style={{ color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Idade e Nascimento</div>

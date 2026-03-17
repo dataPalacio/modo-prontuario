@@ -1,28 +1,38 @@
 import Link from 'next/link'
 import { Plus, Search, Filter, MoreHorizontal, Phone, ChevronLeft, ChevronRight, User } from 'lucide-react'
-import { formatCPF, formatPhone, calcularIdade } from '@/lib/utils'
+import { formatPhone, calcularIdade } from '@/lib/utils'
+import { hashCPF } from '@/lib/crypto'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 
 export default async function PacientesPage({
   searchParams,
 }: {
-  searchParams: { q?: string; page?: string }
+  searchParams: Promise<{ q?: string; page?: string }>
 }) {
-  const params = await Promise.resolve(searchParams)
+  const session = await auth()
+  if (!session?.user?.id) redirect('/login')
+  const clinicaId = session.user.clinicaId
+
+  const params = await searchParams
   const query = params.q || ''
   const page = parseInt(params.page || '1')
   const take = 10
   const skip = (page - 1) * take
 
-  const whereParams = query
-    ? {
-        OR: [
-          { nome: { contains: query, mode: 'insensitive' as const } },
-          { cpf: { contains: query.replace(/\D/g, '') } },
-        ],
-      }
-    : {}
+  // CPF é armazenado criptografado (AES-256-GCM) — busca por hash HMAC-SHA256
+  // Busca por nome sempre disponível; busca por CPF somente com 11 dígitos exatos
+  const cpfDigits = query.replace(/\D/g, '')
+  const whereParams = {
+    clinicaId,       // ⚠️ isolamento multi-tenant — NUNCA remover
+    deletedAt: null, // ⚠️ soft delete — nunca listar registros excluídos
+    ...(query
+      ? cpfDigits.length === 11
+        ? { cpfHash: hashCPF(cpfDigits) }
+        : { nome: { contains: query, mode: 'insensitive' as const } }
+      : {}),
+  }
 
   // Contagem e Busca no banco Real
   const [total, pacientes] = await Promise.all([
@@ -32,10 +42,15 @@ export default async function PacientesPage({
       skip,
       take,
       orderBy: { createdAt: 'desc' },
-      include: {
-        _count: {
-          select: { prontuarios: true },
-        },
+      select: {
+        id: true,
+        nome: true,
+        dataNasc: true,
+        sexo: true,
+        email: true,
+        telefone: true,
+        // ⚠️ CPF omitido — armazenado criptografado, exibir apenas na tela de detalhe
+        _count: { select: { prontuarios: true } },
       },
     }),
   ])
@@ -90,7 +105,6 @@ export default async function PacientesPage({
             <thead>
               <tr>
                 <th>Paciente</th>
-                <th>CPF</th>
                 <th>Idade / Nasc</th>
                 <th>Contato</th>
                 <th>Prontuários</th>
@@ -117,7 +131,6 @@ export default async function PacientesPage({
                       </div>
                     </Link>
                   </td>
-                  <td><span className="font-mono" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{formatCPF(p.cpf)}</span></td>
                   <td style={{ color: 'var(--text-secondary)' }}>
                      {calcularIdade(p.dataNasc.toISOString() as any)} anos
                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
@@ -149,7 +162,7 @@ export default async function PacientesPage({
 
               {pacientes.length === 0 && (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '4rem 2rem', color: 'var(--text-muted)' }}>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '4rem 2rem', color: 'var(--text-muted)' }}>
                      <User size={48} style={{ opacity: 0.2, margin: '0 auto 1rem auto' }} />
                      {query ? 'Nenhum paciente encontrado com essa busca.' : 'Nenhum paciente cadastrado.'}
                   </td>

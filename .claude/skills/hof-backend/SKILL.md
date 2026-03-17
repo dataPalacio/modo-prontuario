@@ -441,3 +441,111 @@ RESEND_API_KEY="re_..."
 - [ ] Campo `lote` presente e obrigatório em procedimentos
 - [ ] Tratamento de erro com status HTTP correto (400, 401, 403, 500)
 - [ ] `session.user.clinicaId` usado — nunca `clinicaId` vindo do body
+
+---
+
+## Armadilhas Conhecidas (lições aprendidas)
+
+### pg v8.20+ — SSL com Supabase
+
+O `pg` v8.20 trata `sslmode=require` como `sslmode=verify-full`, rejeitando o certificado auto-assinado do Supabase mesmo com `ssl: { rejectUnauthorized: false }`. Solução obrigatória em `src/lib/prisma.ts`:
+
+```typescript
+function stripSslMode(url: string): string {
+  const u = new URL(url)
+  u.searchParams.delete('sslmode')
+  return u.toString()
+}
+const pool = new Pool({ connectionString: stripSslMode(connectionString), ssl: { rejectUnauthorized: false } })
+```
+
+### Server Components (Next.js 16) — `searchParams` e `params` são `Promise`
+
+```typescript
+// ❌ Errado (Next.js < 15)
+export default function Page({ params }: { params: { id: string } }) {
+  const { id } = params
+}
+
+// ✅ Correto (Next.js 16)
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+}
+```
+
+### CPF num banco Prisma: nunca `findUnique`, nunca exibir cru
+
+- CPF é armazenado **criptografado** (AES-256-GCM) — chamar `formatCPF(p.cpf)` produz lixo.
+- Busca por CPF usa o campo `cpfHash` (HMAC-SHA256), não o campo `cpf` criptografado.
+- Na listagem, **omitir** o campo `cpf` da query (use `select:`).
+- Na tela de detalhe, descriptografar com `decrypt(paciente.cpf)` e só então formatar.
+
+```typescript
+// Busca por CPF
+const cpfDigits = input.replace(/\D/g, '')
+if (cpfDigits.length === 11) {
+  where = { cpfHash: hashCPF(cpfDigits), clinicaId }
+}
+
+// Detalhe — exibição segura
+const cpfFormatado = formatCPF(decrypt(paciente.cpf))
+```
+
+### Middleware de autenticação é obrigatório
+
+O arquivo `src/middleware.ts` **deve existir** para proteger as rotas do dashboard. Sem ele, qualquer pessoa pode acessar `/pacientes`, `/prontuarios` etc. sem sessão.
+
+```typescript
+// src/middleware.ts
+export { auth as middleware } from '@/lib/auth'
+export const config = {
+  matcher: ['/dashboard/:path*', '/pacientes/:path*', '/prontuarios/:path*', /* ... */],
+}
+```
+
+### Server Actions — padrão com `useActionState`
+
+Server Actions que podem retornar erros devem usar o padrão `useActionState` para feedback ao usuário:
+
+```typescript
+// actions.ts
+export type ActionState = { error?: string; success?: boolean }
+export async function minhaAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  try {
+    // ...
+    return { success: true }
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+      return { error: 'Registro duplicado.' }
+    }
+    return { error: 'Erro interno.' }
+  }
+  // redirect() após try/catch (não dentro)
+}
+
+// page.tsx ('use client')
+const [state, formAction, isPending] = useActionState(minhaAction, {})
+```
+
+### Zod v4 — `z.enum()` sem segundo argumento string
+
+```typescript
+// ❌ Errado (Zod v3 style, quebra em Zod v4)
+z.enum(['CFM', 'CFO', 'CFBM'], 'Conselho inválido')
+
+// ✅ Correto (Zod v4)
+z.enum(['CFM', 'CFO', 'CFBM'])
+// ou com mensagem customizada:
+z.enum(['CFM', 'CFO', 'CFBM'], { invalid_type_error: 'Conselho inválido' })
+```
+
+### `findUnique` vs `findFirst` com filtros compostos
+
+`findUnique` só aceita campos `@unique` ou `@@unique`. Para filtrar por `id + clinicaId` (proteção IDOR), use `findFirst`:
+
+```typescript
+// ❌ prisma.paciente.findUnique({ where: { id } }) — sem proteção de tenant
+// ✅
+prisma.paciente.findFirst({ where: { id, clinicaId, deletedAt: null } })
+```
+
