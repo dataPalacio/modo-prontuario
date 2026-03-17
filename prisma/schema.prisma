@@ -19,6 +19,7 @@ model Clinica {
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
   auditLogs     AuditLog[]
+  agendamentos  Agendamento[]
   pacientes     Paciente[]
   profissionais Profissional[]
   prontuarios   Prontuario[]
@@ -41,6 +42,7 @@ model Profissional {
   ativo          Boolean      @default(true)
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @updatedAt @map("updated_at")
+  agendamentos   Agendamento[]
   auditLogs      AuditLog[]
   clinica        Clinica      @relation(fields: [clinicaId], references: [id])
   prontuarios    Prontuario[]
@@ -66,6 +68,7 @@ model Paciente {
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
   cpfHash     String       @map("cpf_hash")
+  agendamentos Agendamento[]
   clinica     Clinica      @relation(fields: [clinicaId], references: [id])
   prontuarios Prontuario[]
   tcles       Tcle[]
@@ -95,6 +98,7 @@ model Prontuario {
   deletedAt       DateTime?        @map("deleted_at")
   createdAt       DateTime         @default(now()) @map("created_at")
   updatedAt       DateTime         @updatedAt @map("updated_at")
+  agendamentos    Agendamento[]
   evolucoes       Evolucao[]
   fotos           FotoClinica[]
   procedimentos   Procedimento[]
@@ -107,6 +111,31 @@ model Prontuario {
   @@index([pacienteId])
   @@index([dataAtendimento(sort: Desc)])
   @@map("prontuarios")
+}
+
+model Agendamento {
+  id             String            @id @default(cuid())
+  clinicaId      String            @map("clinica_id")
+  pacienteId     String            @map("paciente_id")
+  profissionalId String            @map("profissional_id")
+  prontuarioId   String?           @map("prontuario_id")
+  dataHora       DateTime          @map("data_hora")
+  duracaoMinutos Int               @default(60) @map("duracao_minutos")
+  tipo           TipoAgendamento
+  status         StatusAgendamento @default(AGENDADO)
+  observacoes    String?
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+  clinica        Clinica           @relation(fields: [clinicaId], references: [id])
+  paciente       Paciente          @relation(fields: [pacienteId], references: [id])
+  profissional   Profissional      @relation(fields: [profissionalId], references: [id])
+  prontuario     Prontuario?       @relation(fields: [prontuarioId], references: [id])
+
+  @@index([clinicaId, dataHora])
+  @@index([profissionalId, dataHora])
+  @@index([pacienteId, dataHora])
+  @@index([status])
+  @@map("agendamentos")
 }
 
 model Procedimento {
@@ -248,4 +277,19 @@ enum TipoFoto {
   DEPOIS
   INTRAOPERATORIO
   RETORNO
+}
+
+enum TipoAgendamento {
+  CONSULTA
+  RETORNO
+  PROCEDIMENTO
+  AVALIACAO
+}
+
+enum StatusAgendamento {
+  AGENDADO
+  CONFIRMADO
+  REALIZADO
+  CANCELADO
+  FALTOU
 }
