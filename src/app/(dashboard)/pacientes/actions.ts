@@ -2,12 +2,25 @@
 
 import { prisma } from '@/lib/prisma'
 import { encrypt, hashCPF } from '@/lib/crypto'
+import { getSession } from '@/lib/session'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { Prisma } from '@prisma/client'
 
 const SEXOS = ['MASCULINO', 'FEMININO', 'OUTRO', 'NAO_INFORMADO'] as const
 
-export async function createPacienteAction(formData: FormData) {
+export type CreatePacienteState = {
+  error?: string
+  success?: boolean
+}
+
+export async function createPacienteAction(
+  _prevState: CreatePacienteState,
+  formData: FormData
+): Promise<CreatePacienteState> {
+  const session = await getSession()
+  const clinicaId = session.user.clinicaId
+
   const nome = formData.get('nome') as string
   const cpf = formData.get('cpf') as string
   const dataNascString = formData.get('dataNasc') as string
@@ -20,14 +33,8 @@ export async function createPacienteAction(formData: FormData) {
     ? (sexoValue as (typeof SEXOS)[number])
     : 'NAO_INFORMADO'
 
-  // Obter primeira clínica (mock para multi-tenant até integrarmos session)
-  let clinica = await prisma.clinica.findFirst()
-  if (!clinica) {
-    clinica = await prisma.clinica.create({ data: { nome: 'Clínica Padrão' } })
-  }
-
   const pacienteData = {
-    clinicaId: clinica.id,
+    clinicaId,
     nome,
     cpf: encrypt(cpfNormalizado),
     cpfHash: hashCPF(cpfNormalizado),
@@ -38,10 +45,21 @@ export async function createPacienteAction(formData: FormData) {
     observacoes: observacoes || null,
   }
 
-  const paciente = await prisma.paciente.create({
-    data: pacienteData,
-  })
+  let pacienteId: string
+  try {
+    const paciente = await prisma.paciente.create({ data: pacienteData })
+    pacienteId = paciente.id
+  } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === 'P2002'
+    ) {
+      return { error: 'CPF já cadastrado para esta clínica.' }
+    }
+    console.error('[createPacienteAction]', err)
+    return { error: 'Erro ao salvar paciente. Tente novamente.' }
+  }
 
   revalidatePath('/pacientes')
-  redirect(`/pacientes/${paciente.id}`)
+  redirect(`/pacientes/${pacienteId}`)
 }

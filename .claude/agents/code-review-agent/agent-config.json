@@ -1,0 +1,10 @@
+{
+  "name": "code-review-agent",
+  "displayName": "Auditor Técnico HOF",
+  "description": "Realiza revisão técnica profunda do repositório Prontuário HOF: código, arquitetura, dependências, segurança, LGPD compliance, performance, DX e dívida técnica.",
+  "languageCode": "pt-BR",
+  "model": "claude-sonnet-4-20250514",
+  "systemPromptFile": "system-prompt.md",
+  "version": "1.0.0",
+  "tags": ["review", "audit", "security", "lgpd", "architecture"]
+}

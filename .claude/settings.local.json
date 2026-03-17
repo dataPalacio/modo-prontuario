@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ls \"c:\\\\git-clones\\\\modo-prontuario\\\\src\\\\app\\\\\\(auth\\)\"\")"
+      "Bash(ls \"c:\\\\git-clones\\\\modo-prontuario\\\\src\\\\app\\\\\\(auth\\)\"\")",
+      "Bash(find \"c:/git-clones/modo-prontuario/src/app/\\(dashboard\\)\" -type f -name \"*.ts\" -o -name \"*.tsx\")",
+      "Bash(npx prisma:*)",
+      "Bash(npx tsc:*)",
+      "Bash(claude mcp:*)"
     ]
   }
 }

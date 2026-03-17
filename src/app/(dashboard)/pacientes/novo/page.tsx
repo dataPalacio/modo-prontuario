@@ -1,8 +1,15 @@
+'use client'
+
+import { useActionState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Save } from 'lucide-react'
-import { createPacienteAction } from '../actions'
+import { createPacienteAction, CreatePacienteState } from '../actions'
+
+const initialState: CreatePacienteState = {}
 
 export default function NovoPacientePage() {
+  const [state, formAction, isPending] = useActionState(createPacienteAction, initialState)
+
   return (
     <div style={{ maxWidth: 800, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
@@ -18,7 +25,23 @@ export default function NovoPacientePage() {
       </div>
 
       <div className="card" style={{ padding: '2rem' }}>
-        <form action={createPacienteAction} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        {state.error && (
+          <div
+            role="alert"
+            style={{
+              marginBottom: '1.5rem',
+              padding: '0.875rem 1rem',
+              borderRadius: '0.5rem',
+              background: 'var(--brand-danger-bg, #fef2f2)',
+              color: 'var(--brand-danger, #dc2626)',
+              border: '1px solid var(--brand-danger-border, #fecaca)',
+              fontSize: '0.875rem',
+            }}
+          >
+            {state.error}
+          </div>
+        )}
+        <form action={formAction} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '1.5rem' }}>
             
             <div className="form-group">
@@ -64,8 +87,8 @@ export default function NovoPacientePage() {
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border)', paddingTop: '1.5rem', marginTop: '0.5rem' }}>
             <Link href="/pacientes" className="btn btn-ghost" style={{ marginRight: '1rem' }}>Cancelar</Link>
-            <button type="submit" className="btn btn-primary">
-              <Save size={16} /> Salvar Paciente
+            <button type="submit" className="btn btn-primary" disabled={isPending}>
+              <Save size={16} /> {isPending ? 'Salvando...' : 'Salvar Paciente'}
             </button>
           </div>
         </form>
