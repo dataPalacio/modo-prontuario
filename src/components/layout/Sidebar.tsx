@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Shield,
+  Brain,
 } from 'lucide-react'
 import { useProntuarioStore } from '@/store/prontuarioStore'
 
@@ -38,6 +39,7 @@ const menuItems = [
     section: 'Análise',
     items: [
       { href: '/relatorios', label: 'Relatórios', icon: BarChart3 },
+      { href: '/ia', label: 'IA Assistente', icon: Brain },
     ],
   },
   {

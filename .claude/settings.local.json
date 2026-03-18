@@ -11,7 +11,18 @@
       "mcp__vercel__list_teams",
       "mcp__vercel__list_projects",
       "mcp__vercel__list_deployments",
-      "mcp__vercel__get_deployment_build_logs"
+      "mcp__vercel__get_deployment_build_logs",
+      "Bash(ls -la /c/git-clones/modo-prontuario/src/app/\\\\\\(dashboard\\\\\\)/)",
+      "Bash(find /c/git-clones/modo-prontuario -name project*.md -o -name CHANGELOG*.md)",
+      "Bash(wc -l /c/git-clones/modo-prontuario/prisma/*.ts /c/git-clones/modo-prontuario/prisma/*.prisma)",
+      "Bash(grep -n \"RouteContext\\\\|type RouteContext\" /c/git-clones/modo-prontuario/src/app/api/pacientes/[id]/route.ts)",
+      "Bash(grep -rn \"RouteContext\" /c/git-clones/modo-prontuario/src/app/api/pacientes/[id]/route.ts)",
+      "Bash(grep -rn \"RouteContext\" /c/git-clones/modo-prontuario/*.d.ts)",
+      "Bash(ls /c/git-clones/modo-prontuario/*.d.ts)",
+      "Bash(ls /c/git-clones/modo-prontuario/src/*.d.ts)",
+      "Bash(npx next:*)",
+      "Bash(npm --prefix /c/git-clones/modo-prontuario run lint)",
+      "Bash(npm run:*)"
     ]
   }
 }
