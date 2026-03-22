@@ -12,7 +12,6 @@ function resolveConnectionString() {
 }
 
 const connectionString = resolveConnectionString()
-const isManagedPostgres = /supabase\.com|supabase\.co/i.test(connectionString)
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
