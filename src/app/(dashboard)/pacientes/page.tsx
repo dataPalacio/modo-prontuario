@@ -34,31 +34,67 @@ export default async function PacientesPage({
       : {}),
   }
 
-  // Contagem e Busca no banco Real
-  const [total, pacientes] = await Promise.all([
-    prisma.paciente.count({ where: whereParams }),
-    prisma.paciente.findMany({
-      where: whereParams,
-      skip,
-      take,
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        nome: true,
-        dataNasc: true,
-        sexo: true,
-        email: true,
-        telefone: true,
-        // ⚠️ CPF omitido — armazenado criptografado, exibir apenas na tela de detalhe
-        _count: { select: { prontuarios: true } },
-      },
-    }),
-  ])
+  let total = 0
+  let pacientes: Array<{
+    id: string
+    nome: string
+    dataNasc: Date
+    sexo: string | null
+    email: string | null
+    telefone: string
+    _count: { prontuarios: number }
+  }> = []
+  let dbUnavailable = false
+
+  if (clinicaId === 'dev-clinica') {
+    dbUnavailable = true
+  } else {
+    try {
+      // Contagem e busca no banco real.
+      ;[total, pacientes] = await Promise.all([
+        prisma.paciente.count({ where: whereParams }),
+        prisma.paciente.findMany({
+          where: whereParams,
+          skip,
+          take,
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            nome: true,
+            dataNasc: true,
+            sexo: true,
+            email: true,
+            telefone: true,
+            _count: {
+              select: { prontuarios: true },
+            },
+          },
+        }),
+      ])
+    } catch (error) {
+      dbUnavailable = true
+      console.error('PacientesPage: falha ao consultar banco', error)
+    }
+  }
 
   const totalPages = Math.ceil(total / take)
 
   return (
     <div>
+      {dbUnavailable && (
+        <div
+          className="card"
+          style={{
+            marginBottom: '1rem',
+            padding: '0.875rem 1rem',
+            border: '1px solid rgba(184, 134, 11, 0.35)',
+            background: 'rgba(184, 134, 11, 0.07)',
+            color: 'var(--text-secondary)',
+          }}
+        >
+          Não foi possível carregar pacientes do banco neste momento. O login permanece ativo; tente novamente em instantes.
+        </div>
+      )}
       {/* Page Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <div>

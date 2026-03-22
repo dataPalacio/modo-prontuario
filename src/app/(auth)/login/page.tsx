@@ -14,7 +14,6 @@ function LoginPageContent() {
     rawCallbackUrl.startsWith('/') && !rawCallbackUrl.startsWith('//')
       ? rawCallbackUrl
       : '/dashboard'
-
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

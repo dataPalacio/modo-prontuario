@@ -1,8 +1,0 @@
-{
-  "name": "anamnese-assistant",
-  "displayName": "Assistente de Anamnese HOF",
-  "description": "Auxilia o profissional na coleta estruturada de anamnese para Harmonização Orofacial",
-  "languageCode": "pt-BR",
-  "model": "gemini-1.5-pro",
-  "systemPromptFile": "system-prompt.md"
-}

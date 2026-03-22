@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+  serverExternalPackages: ['@prisma/client', 'bcryptjs'],
   // =========================================================================
   // Headers de Segurança — Prontuário HOF
   // Proteção contra XSS, Clickjacking, MIME sniffing, etc.

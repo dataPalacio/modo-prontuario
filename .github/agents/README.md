@@ -16,6 +16,30 @@ incluindo riscos específicos e linguagem acessível ao paciente.
 ### 3. Report Agent
 Analisa o histórico do paciente e gera resumos clínicos estruturados.
 
+## Agents de Desenvolvimento
+
+Além dos agents clínicos acima, o repositório agora inclui agents de apoio ao desenvolvimento em `.github/agents/`:
+
+### 4. Arquiteto HOF
+Orquestra tarefas de desenvolvimento, decompondo a demanda e acionando os especialistas corretos.
+
+### 5. Frontend Kaio
+Especialista em UI, páginas Next.js, componentes React e design system HOF.
+
+### 6. Backend Prisma
+Especialista em API Routes, Prisma, autenticação, validação e multi-tenant.
+
+### 7. LGPD Guardian
+Especialista em conformidade LGPD, CFM, ANVISA e rastreabilidade de dados clínicos.
+
+### 8. Docs Writer
+Especialista em README, ADR, CHANGELOG, TSDoc e mensagens de commit.
+
+### 9. Code Reviewer
+Especialista em revisão final, checklist HOF, qualidade e riscos de segurança.
+
+Consulte a documentação em `docs/agent-squad/` para o mapa completo de agentes e skills.
+
 ## Configuração
 
 1. Configure as credenciais do Google Cloud no `.env`

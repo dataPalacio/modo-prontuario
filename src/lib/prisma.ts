@@ -1,18 +1,28 @@
+import { PrismaClient } from '../generated/prisma'
 import { PrismaPg } from '@prisma/adapter-pg'
-import { PrismaClient } from '@prisma/client'
 import { Pool } from 'pg'
+
+function resolveConnectionString() {
+  const preferred = process.env.PRISMA_CONNECTION_URL?.trim()
+  const directUrl = process.env.DIRECT_URL?.trim()
+  const databaseUrl = process.env.DATABASE_URL?.trim()
+
+  // DATABASE_URL segue como padrão para manter compatibilidade com Prisma CLI e ambiente atual.
+  return preferred || databaseUrl || directUrl || ''
+}
+
+const connectionString = resolveConnectionString()
+const isManagedPostgres = /supabase\.com|supabase\.co/i.test(connectionString)
+
+const adapter = new PrismaPg({
+  connectionString,
+  ssl: isManagedPostgres ? { rejectUnauthorized: false } : undefined,
+})
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
   prismaPool: Pool | undefined
 }
-
-// Em desenvolvimento local, preferir DIRECT_URL (porta 5432, conexão direta sem pgbouncer).
-// Em produção (Vercel serverless), usar DATABASE_URL (pooler porta 6543 — otimizado para serverless).
-const connectionString =
-  process.env.NODE_ENV !== 'production' && process.env.DIRECT_URL
-    ? process.env.DIRECT_URL
-    : process.env.DATABASE_URL
 
 if (!connectionString) {
   throw new Error('DATABASE_URL não definida para inicializar o Prisma Client')
