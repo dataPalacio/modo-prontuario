@@ -7,7 +7,7 @@ export default function Header() {
   const { searchQuery, setSearchQuery, setSidebarOpen, sidebarOpen } = useProntuarioStore()
 
   return (
-    <header className="header">
+    <header data-testid="header" className="header">
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
         {/* Mobile menu toggle */}
         <button
@@ -43,6 +43,7 @@ export default function Header() {
           />
           <input
             type="text"
+            data-testid="header-search-input"
             placeholder="Buscar paciente, prontuário ou procedimento..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

@@ -90,7 +90,7 @@ export default async function ProntuariosPage({
             {total} prontuário{total !== 1 ? 's' : ''} encontrado{total !== 1 ? 's' : ''}
           </p>
         </div>
-        <Link href="/prontuarios/novo" className="btn btn-primary">
+        <Link href="/prontuarios/novo" data-testid="new-prontuario-btn" className="btn btn-primary">
           <Plus size={16} /> Novo Prontuário
         </Link>
       </div>
@@ -126,6 +126,7 @@ export default async function ProntuariosPage({
             {['TODOS', 'ABERTO', 'EM_ANDAMENTO', 'ASSINADO', 'ARQUIVADO'].map((s) => (
               <Link
                 key={s}
+                data-testid={`status-filter-${s}`}
                 href={`/prontuarios?${query ? `q=${query}&` : ''}${s !== 'TODOS' ? `status=${s}` : ''}`}
                 className={`btn btn-sm ${statusFilter === s ? 'btn-primary' : 'btn-ghost'}`}
                 style={{ fontSize: '0.75rem' }}
@@ -140,7 +141,7 @@ export default async function ProntuariosPage({
       {/* Table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div className="table-wrapper" style={{ border: 'none' }}>
-          <table className="table">
+          <table data-testid="prontuarios-table" className="table">
             <thead>
               <tr>
                 <th>Nº Prontuário</th>

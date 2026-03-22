@@ -55,7 +55,9 @@ export default function Sidebar() {
   const { sidebarOpen, toggleSidebar } = useProntuarioStore()
 
   return (
-    <aside className={`sidebar ${!sidebarOpen ? 'collapsed' : ''}`}
+    <aside
+      data-testid="sidebar"
+      className={`sidebar ${!sidebarOpen ? 'collapsed' : ''}`}
       style={{ width: sidebarOpen ? 'var(--sidebar-width)' : 'var(--sidebar-collapsed)' }}
     >
       {/* Logo */}
@@ -84,7 +86,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="sidebar-nav">
+      <nav data-testid="sidebar-nav" className="sidebar-nav">
         {menuItems.map((section) => (
           <div key={section.section}>
             {sidebarOpen && (
@@ -97,6 +99,7 @@ export default function Sidebar() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  data-testid={`nav-item-${item.label.toLowerCase().replace(/\s+/g, '-').normalize('NFD').replace(/[\u0300-\u036f]/g, '')}`}
                   className={`sidebar-link ${isActive ? 'active' : ''}`}
                   title={item.label}
                   style={{ position: 'relative' }}

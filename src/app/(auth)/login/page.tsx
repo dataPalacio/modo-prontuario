@@ -95,15 +95,19 @@ function LoginPageContent() {
           </h2>
 
           {error && (
-            <div style={{
-              background: '#FEF2F2',
-              border: '1px solid #FECACA',
-              color: 'var(--brand-danger)',
-              borderRadius: 'var(--radius)',
-              padding: '0.75rem 1rem',
-              fontSize: '0.875rem',
-              marginBottom: '1rem',
-            }}>
+            <div
+              data-testid="login-error"
+              role="alert"
+              style={{
+                background: '#FEF2F2',
+                border: '1px solid #FECACA',
+                color: 'var(--brand-danger)',
+                borderRadius: 'var(--radius)',
+                padding: '0.75rem 1rem',
+                fontSize: '0.875rem',
+                marginBottom: '1rem',
+              }}
+            >
               {error}
             </div>
           )}
@@ -118,6 +122,7 @@ function LoginPageContent() {
                 }} />
                 <input
                   type="email"
+                  data-testid="email-input"
                   className="form-input"
                   placeholder="seu@email.com"
                   value={email}
@@ -139,6 +144,7 @@ function LoginPageContent() {
                 }} />
                 <input
                   type={showPassword ? 'text' : 'password'}
+                  data-testid="password-input"
                   className="form-input"
                   placeholder="••••••••"
                   value={password}
@@ -178,6 +184,7 @@ function LoginPageContent() {
 
             <button
               type="submit"
+              data-testid="login-submit"
               className="btn btn-primary btn-lg"
               disabled={loading}
               style={{ width: '100%' }}

@@ -22,7 +22,12 @@
       "Bash(ls /c/git-clones/modo-prontuario/src/*.d.ts)",
       "Bash(npx next:*)",
       "Bash(npm --prefix /c/git-clones/modo-prontuario run lint)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(find /c/git-clones/modo-prontuario/.github -name *.yaml -o -name *.yml)",
+      "Bash(find /c/git-clones/modo-prontuario/src/components -type f -name *.tsx)",
+      "Bash(head -100 /c/git-clones/modo-prontuario/src/app/\\\\\\(dashboard\\\\\\)/pacientes/[id]/page.tsx)",
+      "Bash(head -100 /c/git-clones/modo-prontuario/src/app/\\\\\\(dashboard\\\\\\)/prontuarios/page.tsx)",
+      "Bash(npm install:*)"
     ]
   }
 }

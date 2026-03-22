@@ -103,7 +103,7 @@ export default async function PacientesPage({
             {total} pacientes cadastrados
           </p>
         </div>
-        <Link href="/pacientes/novo" className="btn btn-primary">
+        <Link href="/pacientes/novo" data-testid="new-patient-btn" className="btn btn-primary">
           <Plus size={16} /> Novo Paciente
         </Link>
       </div>
@@ -116,6 +116,7 @@ export default async function PacientesPage({
             <input
               type="text"
               name="q"
+              data-testid="search-input"
               placeholder="Buscar por nome ou CPF..."
               className="form-input"
               style={{ paddingLeft: '2.5rem' }}
@@ -137,7 +138,7 @@ export default async function PacientesPage({
       {/* Table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div className="table-wrapper" style={{ border: 'none' }}>
-          <table className="table">
+          <table data-testid="pacientes-table" className="table">
             <thead>
               <tr>
                 <th>Paciente</th>
@@ -213,13 +214,13 @@ export default async function PacientesPage({
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', borderTop: '1px solid var(--border)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
             <span>Mostrando {skip + 1}-{Math.min(skip + take, total)} de <strong>{total}</strong> pacientes</span>
             <div style={{ display: 'flex', gap: '0.375rem' }}>
-              <Link scroll={false} href={`/pacientes?q=${query}&page=${page - 1}`} className={`btn btn-outline btn-sm ${page <= 1 ? 'pointer-events-none opacity-50' : ''}`}>
+              <Link scroll={false} data-testid="pagination-prev" href={`/pacientes?q=${query}&page=${page - 1}`} className={`btn btn-outline btn-sm ${page <= 1 ? 'pointer-events-none opacity-50' : ''}`}>
                 <ChevronLeft size={16} /> Anterior
               </Link>
               <div style={{ padding: '0 0.5rem', display: 'flex', alignItems: 'center' }}>
                  Página {page} de {totalPages}
               </div>
-              <Link scroll={false} href={`/pacientes?q=${query}&page=${page + 1}`} className={`btn btn-outline btn-sm ${page >= totalPages ? 'pointer-events-none opacity-50' : ''}`}>
+              <Link scroll={false} data-testid="pagination-next" href={`/pacientes?q=${query}&page=${page + 1}`} className={`btn btn-outline btn-sm ${page >= totalPages ? 'pointer-events-none opacity-50' : ''}`}>
                 Próxima <ChevronRight size={16} />
               </Link>
             </div>

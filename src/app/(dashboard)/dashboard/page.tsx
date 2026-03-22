@@ -207,7 +207,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div style={{
+      <div data-testid="dashboard-stats" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
         gap: '1rem',
@@ -218,7 +218,7 @@ export default function DashboardPage() {
           : stats.map((stat) => {
               const Icon = stat.icon
               return (
-                <div key={stat.label} className="stat-card">
+                <div key={stat.label} data-testid="stat-card" className="stat-card">
                   <div className={`stat-card__icon stat-card__icon--${stat.color}`}>
                     <Icon size={22} />
                   </div>
