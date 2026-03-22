@@ -14,11 +14,6 @@ function resolveConnectionString() {
 const connectionString = resolveConnectionString()
 const isManagedPostgres = /supabase\.com|supabase\.co/i.test(connectionString)
 
-const adapter = new PrismaPg({
-  connectionString,
-  ssl: isManagedPostgres ? { rejectUnauthorized: false } : undefined,
-})
-
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
   prismaPool: Pool | undefined

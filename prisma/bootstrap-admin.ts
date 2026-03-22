@@ -2,6 +2,7 @@ import { config as loadEnv } from 'dotenv'
 import bcrypt from 'bcryptjs'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
+import type { Pool as PgPool } from 'pg'
 import { Pool } from 'pg'
 
 loadEnv()
@@ -13,8 +14,8 @@ if (!connectionString) {
   throw new Error('DATABASE_URL não definida para bootstrap de admin')
 }
 
-const pool = new Pool({ connectionString })
-const prisma = new PrismaClient({ adapter: new PrismaPg(pool) })
+const pool: PgPool = new Pool({ connectionString })
+const prisma = new PrismaClient({ adapter: new PrismaPg(pool as any) })
 
 async function main() {
   const adminEmail = (process.env.BOOTSTRAP_ADMIN_EMAIL || 'carlos@clinicapremium.com.br')
